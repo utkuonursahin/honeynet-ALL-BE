@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>me.utku</groupId>
-	<artifactId>web-threats-honeypot-BE</artifactId>
+	<artifactId>email-honeypot-BE</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>fakeLoginPanel</name>
-	<description>Fake login panel backend for honeypot</description>
+	<name>emailContent-honeypot</name>
+	<description>E-mail honeypot</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
@@ -23,8 +23,13 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -38,11 +43,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

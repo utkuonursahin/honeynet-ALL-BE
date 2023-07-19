@@ -1,6 +1,7 @@
 package me.utku.honeynet.controller;
 
 import lombok.RequiredArgsConstructor;
+import me.utku.honeynet.dto.EmailListener;
 import me.utku.honeynet.dto.EmailSetupRequest;
 import me.utku.honeynet.dto.GenericResponse;
 import me.utku.honeynet.model.Pot;
@@ -34,16 +35,22 @@ public class PotController {
     return potService.getImage(id);
   }
 
+  @GetMapping("/phishing-email")
+    public GenericResponse<List<EmailListener>> getEmailListener(){
+        List<EmailListener> emailListeners = restService.forwardGetALlEmailListeners();
+        return GenericResponse.<List<EmailListener>>builder().data(emailListeners).build();
+    }
+
   @PostMapping
   public GenericResponse<Pot> createPot(@RequestBody Pot newPot){
     Pot pot = potService.create(newPot);
     return GenericResponse.<Pot>builder().data(pot).build();
   }
 
-  @PostMapping("/email/setup")
-  public GenericResponse<EmailListenerResponse> setupEmailListener(@RequestBody EmailSetupRequest emailSetupRequest){
-    EmailListenerResponse emailListenerResponse = restService.forwardEmailListenerSetupReq(emailSetupRequest);
-    return GenericResponse.<EmailListenerResponse>builder().data(emailListenerResponse).build();
+  @PostMapping("/phishing-email")
+  public GenericResponse<EmailListener> setupEmailListener(@RequestBody EmailSetupRequest emailSetupRequest){
+    EmailListener emailListener = restService.forwardSetupEmailListener(emailSetupRequest);
+    return GenericResponse.<EmailListener>builder().data(emailListener).build();
   }
 
   @PatchMapping("/{id}")
@@ -55,6 +62,12 @@ public class PotController {
   @DeleteMapping("/{id}")
   public GenericResponse<Boolean> deletePot(@PathVariable String id){
     boolean result = potService.delete(id);
+    return GenericResponse.<Boolean>builder().data(result).build();
+  }
+
+  @DeleteMapping("/phishing-email/{id}")
+  public GenericResponse<Boolean> deleteEmailListener(@PathVariable String id){
+    Boolean result = restService.forwardDeleteEmailListener(id);
     return GenericResponse.<Boolean>builder().data(result).build();
   }
 }
