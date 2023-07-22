@@ -48,8 +48,8 @@ public class PotController {
   }
 
   @PostMapping("/phishing-email")
-  public GenericResponse<EmailListener> setupEmailListener(@RequestBody EmailSetupRequest emailSetupRequest){
-    EmailListener emailListener = restService.forwardSetupEmailListener(emailSetupRequest);
+  public GenericResponse<EmailListener> createEmailListener(@RequestBody EmailSetupRequest emailSetupRequest){
+    EmailListener emailListener = restService.forwardCreateEmailListener(emailSetupRequest);
     return GenericResponse.<EmailListener>builder().data(emailListener).build();
   }
 
@@ -57,6 +57,12 @@ public class PotController {
   public GenericResponse<Pot> updatePot(@PathVariable String id, @RequestBody Pot reqBody){
     Pot pot = potService.update(id,reqBody);
     return GenericResponse.<Pot>builder().data(pot).build();
+  }
+
+  @PatchMapping("/phishing-email/{id}")
+  public GenericResponse<EmailListener> updateEmailListener(@PathVariable String id, @RequestBody EmailListener updatePart){
+    EmailListener emailListener = restService.forwardUpdateEmailListener(id,updatePart);
+    return GenericResponse.<EmailListener>builder().data(emailListener).build();
   }
 
   @DeleteMapping("/{id}")

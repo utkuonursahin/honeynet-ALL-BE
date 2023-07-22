@@ -2,9 +2,10 @@ package me.utku.honeynet.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import me.utku.honeynet.dto.JsonAuthFailureHandler;
-import me.utku.honeynet.dto.JsonAuthSuccessHandler;
-import me.utku.honeynet.dto.JsonLogoutSuccessHandler;
+import me.utku.honeynet.dto.security.CustomAuthenticationEntryPoint;
+import me.utku.honeynet.dto.security.JsonAuthFailureHandler;
+import me.utku.honeynet.dto.security.JsonAuthSuccessHandler;
+import me.utku.honeynet.dto.security.JsonLogoutSuccessHandler;
 import me.utku.honeynet.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,6 +58,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public CustomAuthenticationEntryPoint customAuthenticationEntryPoint(){
+        return new CustomAuthenticationEntryPoint(objectMapper);
+    }
+
+    @Bean
     SecurityFilterChain filterChain (HttpSecurity http) throws Exception{
         return http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -67,6 +73,8 @@ public class SecurityConfig {
                 .requestMatchers("/suspicious/client/**").hasAuthority("ADMIN")
                 .requestMatchers("/**").permitAll()
             )
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(customAuthenticationEntryPoint()))
             .formLogin(form -> form
                 .successHandler(jsonAuthSuccessHandler())
                 .failureHandler(jsonAuthFailureHandler())

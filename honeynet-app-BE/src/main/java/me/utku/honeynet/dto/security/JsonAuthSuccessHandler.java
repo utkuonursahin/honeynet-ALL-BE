@@ -1,7 +1,6 @@
-package me.utku.honeynet.dto;
+package me.utku.honeynet.dto.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -26,9 +25,7 @@ public class JsonAuthSuccessHandler implements AuthenticationSuccessHandler {
 
     // Customize the JSON response
     Map<String, Object> jsonResponse = new HashMap<>();
-    jsonResponse.put("authenticated", true);
     jsonResponse.put("statusCode", HttpServletResponse.SC_OK);
-    jsonResponse.put("message", "Authentication successful!");
     jsonResponse.put("data", userDetails);
 
     // Write the JSON response to the response body

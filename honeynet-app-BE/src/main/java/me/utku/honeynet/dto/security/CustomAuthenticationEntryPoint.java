@@ -1,31 +1,31 @@
-package me.utku.honeynet.dto;
+package me.utku.honeynet.dto.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.AuthenticationEntryPoint;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 @RequiredArgsConstructor
-public class JsonLogoutSuccessHandler implements LogoutSuccessHandler {
+public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
     private final ObjectMapper objectMapper;
-
     @Override
-    public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         response.setStatus(HttpServletResponse.SC_OK);
         response.setContentType("application/json");
 
+        // Customize the JSON response
         Map<String, Object> jsonResponse = new HashMap<>();
-        jsonResponse.put("authenticated", false);
-        jsonResponse.put("statusCode", HttpServletResponse.SC_OK);
-        jsonResponse.put("message", "Logout successful!");
+        jsonResponse.put("statusCode", HttpServletResponse.SC_UNAUTHORIZED);
+        jsonResponse.put("data", null);
 
+        // Write the JSON response to the response body
         objectMapper.writeValue(response.getWriter(), jsonResponse);
     }
 }

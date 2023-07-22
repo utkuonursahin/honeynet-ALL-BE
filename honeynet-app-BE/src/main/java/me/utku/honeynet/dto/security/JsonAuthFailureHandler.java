@@ -1,4 +1,4 @@
-package me.utku.honeynet.dto;
+package me.utku.honeynet.dto.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
@@ -24,10 +24,8 @@ public class JsonAuthFailureHandler implements AuthenticationFailureHandler {
 
     // Customize the JSON response
     Map<String, Object> jsonResponse = new HashMap<>();
-    jsonResponse.put("authenticated", false);
     jsonResponse.put("statusCode", HttpServletResponse.SC_UNAUTHORIZED);
-    jsonResponse.put("message", "Authentication failed!");
-    jsonResponse.put("error",exception.getMessage());
+    jsonResponse.put("data", null);
 
     // Write the JSON response to the response body
     objectMapper.writeValue(response.getWriter(), jsonResponse);

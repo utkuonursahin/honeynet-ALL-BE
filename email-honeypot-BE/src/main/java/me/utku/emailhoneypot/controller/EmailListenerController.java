@@ -23,10 +23,15 @@ public class EmailListenerController {
     }
 
     @PostMapping
-    public EmailListener setupEmailListener(@RequestBody EmailSetupRequest emailSetupRequest, HttpServletRequest httpServletRequest){
+    public EmailListener createEmailListener(@RequestBody EmailSetupRequest emailSetupRequest, HttpServletRequest httpServletRequest){
         EmailListener emailListener = emailListenerService.create(emailSetupRequest,httpServletRequest);
         emailListener.setPassword(null);
         return emailListener;
+    }
+
+    @PutMapping("/{id}")
+    public EmailListener updateEmailListener(@PathVariable String id, @RequestBody EmailListener emailListener, HttpServletRequest httpServletRequest){
+        return emailListenerService.update(id,emailListener,httpServletRequest);
     }
 
     @DeleteMapping("/{id}")

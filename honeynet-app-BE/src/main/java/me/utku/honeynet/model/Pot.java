@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Pot extends Base {
   private String name;
   private String description;
-  private String url; //make it client
+  private String clientUrl;
   private String setupUrl;
   private PotCategory[] category;
   private String previewImagePath;

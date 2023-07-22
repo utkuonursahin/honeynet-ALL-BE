@@ -67,7 +67,7 @@ public class BruteForceRequestService {
                 restService.postSuspiciousActivity(existReq);
                 return fakeAuthenticationSuccessResponse();
             } else {
-                return fakeAuthenticationSuccessResponse();
+                return fakeAuthenticationFailResponse(); //return fail
             }
         }
     }

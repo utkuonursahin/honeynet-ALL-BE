@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.emailhoneypot.dto.EmailSetupRequest;
 import me.utku.emailhoneypot.enums.EmailListenerStatus;
-import me.utku.emailhoneypot.model.EmailContent;
+import me.utku.emailhoneypot.dto.EmailContent;
 import me.utku.emailhoneypot.model.EmailListener;
 import me.utku.emailhoneypot.repository.EmailListenerRepository;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -67,9 +67,7 @@ public class EmailListenerService extends MessageCountAdapter {
         return emailListener;
     }
 
-
-
-    @Scheduled(fixedRate = 1000 * 60 * 10)
+    @Scheduled(fixedRate = 1000 * 10)
     public void checkEmails() {
         for (EmailListener emailListener : emailListenerRepository.findAll()) {
             System.out.println("Email listener: " + emailListener);
@@ -103,20 +101,24 @@ public class EmailListenerService extends MessageCountAdapter {
                 } catch (MessagingException error) {
                     log.error("EmailListener service checkMails exception: {}", error.getMessage());
                 }
-            } else {
-
             }
         }
     }
 
-    //NOT COMPLETED
-    public EmailListener update(EmailListener emailListener) {
+    public EmailListener update(String id, EmailListener emailListener, HttpServletRequest httpServletRequest) {
+        EmailListener existListener = new EmailListener();
         try {
-            return emailListenerRepository.save(emailListener);
+            String authToken = httpServletRequest.getHeader("In-App-Auth-Token");
+            if (authToken != null && jwtService.validateJWT(authToken)) {
+                existListener = emailListenerRepository.findById(id).orElse(null);
+                if (existListener == null) throw new Exception("EmailListener not found");
+                if(emailListener.getStatus() != null) existListener.setStatus(emailListener.getStatus());
+                existListener = emailListenerRepository.save(existListener);
+            }
         } catch (Exception error) {
             log.error("EmailListener service update exception: {}", error.getMessage());
-            return null;
         }
+        return emailListener;
     }
 
     public Boolean delete(String id, HttpServletRequest httpServletRequest) {

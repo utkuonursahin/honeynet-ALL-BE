@@ -5,4 +5,5 @@ public enum PotCategory {
   BRUTE_FORCE,
   WEB_SCRAPING,
   EMAIL,
+  UNRESTRICTED_FILE_UPLOAD,
 }

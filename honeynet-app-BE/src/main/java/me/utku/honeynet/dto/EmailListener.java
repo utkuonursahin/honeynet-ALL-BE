@@ -2,7 +2,6 @@ package me.utku.honeynet.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import me.utku.honeynet.enums.EmailListenerStatus;
 
 @Data

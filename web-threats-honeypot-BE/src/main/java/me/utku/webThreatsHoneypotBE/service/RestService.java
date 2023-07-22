@@ -48,7 +48,7 @@ public class RestService {
         map.put("origin", bruteForceRequest.getOrigin());
         map.put("payload", payload);
         map.put("category", "BRUTE_FORCE");
-        map.put("potName","Brute Force & Path Traversal Pot");
+        map.put("potName","Web Threats Pot");
         map.put("date", LocalDateTime.now());
         return map;
     }
@@ -61,7 +61,7 @@ public class RestService {
         map.put("origin", pathTraversalRequest.getOrigin());
         map.put("payload", payload);
         map.put("category", "PATH_TRAVERSAL");
-        map.put("potName","Brute Force & Path Traversal Pot");
+        map.put("potName","Web Threats Pot");
         map.put("date", LocalDateTime.now());
         return map;
     }

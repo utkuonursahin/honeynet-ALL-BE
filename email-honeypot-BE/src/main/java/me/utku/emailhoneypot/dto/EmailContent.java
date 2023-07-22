@@ -1,4 +1,4 @@
-package me.utku.emailhoneypot.model;
+package me.utku.emailhoneypot.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

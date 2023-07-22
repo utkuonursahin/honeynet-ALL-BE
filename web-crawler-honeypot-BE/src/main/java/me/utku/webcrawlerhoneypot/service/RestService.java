@@ -46,7 +46,7 @@ public class RestService {
         map.put("origin", scrawlAttempt.getOrigin());
         map.put("payload", payload);
         map.put("category", "WEB_SCRAPING");
-        map.put("potName","Web Scrawl Detection Pot");
+        map.put("potName","Web Crawl Pot");
         map.put("date", LocalDateTime.now());
         return map;
     }

@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -57,6 +58,7 @@ public class PotService {
     public Pot create(Pot newPot) {
         Pot pot = new Pot();
         try {
+            pot.setId(UUID.randomUUID().toString());
             pot = potRepository.save(newPot);
         } catch (Exception exception){
             log.error("Pot service create exception: {}",exception.getMessage());
@@ -72,8 +74,8 @@ public class PotService {
             if (updatedParts.getName() != null) {
                 existPot.setName(updatedParts.getName());
             }
-            if (updatedParts.getUrl() != null) {
-                existPot.setUrl(updatedParts.getUrl());
+            if (updatedParts.getClientUrl() != null) {
+                existPot.setClientUrl(updatedParts.getClientUrl());
             }
             if (updatedParts.getSetupUrl() != null) {
                 existPot.setSetupUrl(updatedParts.getSetupUrl());

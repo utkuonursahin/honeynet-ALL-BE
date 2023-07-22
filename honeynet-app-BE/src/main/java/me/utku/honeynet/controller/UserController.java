@@ -2,10 +2,13 @@ package me.utku.honeynet.controller;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import me.utku.honeynet.dto.security.CustomUserDetails;
 import me.utku.honeynet.dto.GenericResponse;
 import me.utku.honeynet.model.User;
 import me.utku.honeynet.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -46,11 +49,28 @@ public class UserController {
     return GenericResponse.<Boolean>builder().data(result).statusCode(200).build();
   }
 
-  @GetMapping("/isLoggedIn")
-  public boolean whoAmI(HttpSession session, HttpServletRequest request){
+  @GetMapping("/who-am-i")
+  public GenericResponse<User> me(HttpSession session,
+                                               HttpServletRequest request,
+                                               @AuthenticationPrincipal CustomUserDetails userDetails){
     String sessionId = session.getId();
     Cookie [] cookies = request.getCookies();
     String cookie = cookies[0].getValue();
-    return sessionId.equals(cookie);
+    User user = userService.get(userDetails.getId());
+    if(sessionId.equals(cookie)){
+      user.setPassword(null);
+      return GenericResponse.<User>builder().data(user).statusCode(200).build();
+    } else {
+      return GenericResponse.<User>builder().data(null).statusCode(401).build();
+    }
+  }
+
+  @GetMapping("/is-authenticated")
+  public GenericResponse<Boolean> isAuthenticated(Authentication authentication){
+    if(authentication != null){
+      return GenericResponse.<Boolean>builder().data(true).statusCode(200).build();
+    } else {
+      return GenericResponse.<Boolean>builder().data(false).statusCode(401).build();
+    }
   }
 }

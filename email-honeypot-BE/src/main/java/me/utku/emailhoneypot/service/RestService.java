@@ -1,7 +1,7 @@
 package me.utku.emailhoneypot.service;
 
 import lombok.extern.slf4j.Slf4j;
-import me.utku.emailhoneypot.model.EmailContent;
+import me.utku.emailhoneypot.dto.EmailContent;
 import me.utku.emailhoneypot.dto.SuspiciousActivity;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
@@ -48,7 +48,7 @@ public class RestService {
         map.put("origin", emailContent.getOrigin());
         map.put("payload", payload);
         map.put("category", "EMAIL");
-        map.put("potName","E-mail Pot");
+        map.put("potName","Phishing E-mail Pot");
         map.put("date", LocalDateTime.now());
         return map;
     }

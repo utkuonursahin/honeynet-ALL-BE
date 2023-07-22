@@ -1,6 +1,6 @@
 package me.utku.honeynet.service;
 import lombok.extern.slf4j.Slf4j;
-import me.utku.honeynet.dto.CustomUserDetails;
+import me.utku.honeynet.dto.security.CustomUserDetails;
 import me.utku.honeynet.model.User;
 import me.utku.honeynet.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -42,6 +43,7 @@ public class UserService implements UserDetailsService {
   public User create(User newUser){
     User user = new User();
     try{
+      user.setId(UUID.randomUUID().toString());
       user = userRepository.save(newUser);
     }catch (Exception exception){
       log.error("User service create exception: {}",exception.getMessage());
@@ -54,11 +56,8 @@ public class UserService implements UserDetailsService {
     try{
       existingUser = userRepository.findById(id).orElse(null);
       if(existingUser == null) throw new Exception("No user found with that id!");
-      if(updatedParts.getUsername() != null){
-        existingUser.setUsername(updatedParts.getUsername());
-      }
-      if(updatedParts.getEmail() != null){
-        existingUser.setEmail(updatedParts.getEmail());
+      if(updatedParts.getNotificationReceiverMails() != null) {
+        existingUser.setNotificationReceiverMails(updatedParts.getNotificationReceiverMails());
       }
       userRepository.save(existingUser);
     }catch (Exception exception){
@@ -84,9 +83,11 @@ public class UserService implements UserDetailsService {
       throw new UsernameNotFoundException("Could not find user");
     }
     return new CustomUserDetails(
+        user.getId(),
         user.getUsername(),
         user.getPassword(),
         user.getEmail(),
+        user.getNotificationReceiverMails(),
         AuthorityUtils.createAuthorityList(user.getRole().name())
     );
   }
