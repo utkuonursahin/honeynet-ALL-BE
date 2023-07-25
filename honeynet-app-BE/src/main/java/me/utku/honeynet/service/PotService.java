@@ -1,8 +1,13 @@
 package me.utku.honeynet.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.utku.honeynet.dto.security.CustomUserDetails;
+import me.utku.honeynet.enums.UserRole;
 import me.utku.honeynet.model.Pot;
+import me.utku.honeynet.model.User;
 import me.utku.honeynet.repository.PotRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +22,8 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class PotService {
+    private final UserService userService;
+    private final FirmService firmService;
     private final PotRepository potRepository;
 
     public List<Pot> getAll() {
@@ -25,6 +32,22 @@ public class PotService {
             pots = potRepository.findAll();
         } catch (Exception exception) {
             log.error("Pot service getAll exception: {}", exception.getMessage());
+        }
+        return pots;
+    }
+
+    public List<Pot> getAll(String firmId, CustomUserDetails userDetails, HttpSession session ) {
+        List<Pot> pots = new ArrayList<>();
+        try {
+            User user = userService.get(userDetails.getId());
+            if(user.getRole() == UserRole.SUPER_ADMIN){
+                session.setAttribute("firmId", firmId);
+            } else if(user.getRole() == UserRole.ADMIN){
+                session.setAttribute("firmId", user.getFirm().getId());
+            }
+            pots = potRepository.findAllByFirm_Id(session.getAttribute("firmId").toString());
+        } catch (Exception exception) {
+            log.error("Pot service getAllByUser exception: {}", exception.getMessage());
         }
         return pots;
     }
@@ -58,7 +81,7 @@ public class PotService {
     public Pot create(Pot newPot) {
         Pot pot = new Pot();
         try {
-            pot.setId(UUID.randomUUID().toString());
+            newPot.setId(UUID.randomUUID().toString());
             pot = potRepository.save(newPot);
         } catch (Exception exception){
             log.error("Pot service create exception: {}",exception.getMessage());
@@ -66,25 +89,14 @@ public class PotService {
         return pot;
     }
 
+    //NOT COMPLETED
     public Pot update(String potId, Pot updatedParts){
         Pot existPot = new Pot();
         try{
             existPot = potRepository.findById(potId).orElse(null);
             if (existPot == null) throw new Exception("No pot found with given id!");
-            if (updatedParts.getName() != null) {
-                existPot.setName(updatedParts.getName());
-            }
-            if (updatedParts.getClientUrl() != null) {
-                existPot.setClientUrl(updatedParts.getClientUrl());
-            }
-            if (updatedParts.getSetupUrl() != null) {
-                existPot.setSetupUrl(updatedParts.getSetupUrl());
-            }
-            if (updatedParts.getCategory() != null) {
-                existPot.setCategory(updatedParts.getCategory());
-            }
-            if (updatedParts.getPreviewImagePath() != null) {
-                existPot.setPreviewImagePath(updatedParts.getPreviewImagePath());
+            if(updatedParts.getFirm() != null){
+                existPot.setFirm(updatedParts.getFirm());
             }
             potRepository.save(existPot);
         }catch(Exception exception){

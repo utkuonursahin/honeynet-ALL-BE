@@ -38,7 +38,7 @@ public class UserController {
   }
 
   @PatchMapping("/{id}")
-  public GenericResponse<User> updateUser(@PathVariable String id, @RequestBody User reqBody) throws Exception {
+  public GenericResponse<User> updateUser(@PathVariable String id, @RequestBody User reqBody){
     User user = userService.update(id,reqBody);
     return GenericResponse.<User>builder().data(user).statusCode(200).build();
   }
@@ -58,7 +58,6 @@ public class UserController {
     String cookie = cookies[0].getValue();
     User user = userService.get(userDetails.getId());
     if(sessionId.equals(cookie)){
-      user.setPassword(null);
       return GenericResponse.<User>builder().data(user).statusCode(200).build();
     } else {
       return GenericResponse.<User>builder().data(null).statusCode(401).build();

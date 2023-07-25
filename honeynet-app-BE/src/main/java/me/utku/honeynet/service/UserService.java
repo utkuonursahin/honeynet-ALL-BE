@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @Service
 public class UserService implements UserDetailsService {
   private final UserRepository userRepository;
+  private final PasswordEncoder passwordEncoder;
 
   public List<User> getAll(){
     List<User> users = new ArrayList<>();
@@ -43,7 +45,8 @@ public class UserService implements UserDetailsService {
   public User create(User newUser){
     User user = new User();
     try{
-      user.setId(UUID.randomUUID().toString());
+      newUser.setId(UUID.randomUUID().toString());
+      newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
       user = userRepository.save(newUser);
     }catch (Exception exception){
       log.error("User service create exception: {}",exception.getMessage());
@@ -54,11 +57,8 @@ public class UserService implements UserDetailsService {
   public User update(String id, User updatedParts){
     User existingUser = new User();
     try{
-      existingUser = userRepository.findById(id).orElse(null);
+      existingUser = get(id);
       if(existingUser == null) throw new Exception("No user found with that id!");
-      if(updatedParts.getNotificationReceiverMails() != null) {
-        existingUser.setNotificationReceiverMails(updatedParts.getNotificationReceiverMails());
-      }
       userRepository.save(existingUser);
     }catch (Exception exception){
       log.error("User service update exception: {}",exception.getMessage());
@@ -86,8 +86,6 @@ public class UserService implements UserDetailsService {
         user.getId(),
         user.getUsername(),
         user.getPassword(),
-        user.getEmail(),
-        user.getNotificationReceiverMails(),
         AuthorityUtils.createAuthorityList(user.getRole().name())
     );
   }

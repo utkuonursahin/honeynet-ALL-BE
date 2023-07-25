@@ -1,14 +1,19 @@
 package me.utku.honeynet.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import me.utku.honeynet.dto.EmailListener;
 import me.utku.honeynet.dto.EmailSetupRequest;
 import me.utku.honeynet.dto.GenericResponse;
+import me.utku.honeynet.dto.security.CustomUserDetails;
 import me.utku.honeynet.model.Pot;
 import me.utku.honeynet.service.PotService;
 import me.utku.honeynet.service.RestService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -18,9 +23,11 @@ public class PotController {
   private final PotService potService;
   private final RestService restService;
 
-  @GetMapping
-  public GenericResponse<List<Pot>> getPots() {
-    List<Pot> pots = potService.getAll();
+  @GetMapping()
+  public GenericResponse<List<Pot>> getPots(
+      @RequestParam(required = false) String firmId,
+      @AuthenticationPrincipal CustomUserDetails userDetails, HttpSession session){
+    List<Pot> pots = potService.getAll(firmId,userDetails, session);
     return GenericResponse.<List<Pot>>builder().data(pots).statusCode(200).build();
   }
 

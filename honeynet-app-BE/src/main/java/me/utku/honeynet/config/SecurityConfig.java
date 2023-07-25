@@ -6,6 +6,8 @@ import me.utku.honeynet.dto.security.CustomAuthenticationEntryPoint;
 import me.utku.honeynet.dto.security.JsonAuthFailureHandler;
 import me.utku.honeynet.dto.security.JsonAuthSuccessHandler;
 import me.utku.honeynet.dto.security.JsonLogoutSuccessHandler;
+import me.utku.honeynet.enums.UserRole;
+import me.utku.honeynet.repository.UserRepository;
 import me.utku.honeynet.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final ObjectMapper objectMapper;
+    private final UserRepository userRepository;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -44,7 +47,7 @@ public class SecurityConfig {
 
     @Bean
     public JsonAuthSuccessHandler jsonAuthSuccessHandler() {
-        return new JsonAuthSuccessHandler(objectMapper);
+        return new JsonAuthSuccessHandler(objectMapper,userRepository);
     }
 
     @Bean
@@ -68,10 +71,13 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(req -> req
-                .requestMatchers("/pot/**").hasAuthority("ADMIN")
-                .requestMatchers("/user/**").hasAuthority("ADMIN")
-                .requestMatchers("/suspicious/client/**").hasAuthority("ADMIN")
-                .requestMatchers("/**").permitAll()
+                .requestMatchers("/super-admin/**").hasAuthority(UserRole.SUPER_ADMIN.toString())
+                .requestMatchers("/firm/**").hasAuthority(UserRole.SUPER_ADMIN.toString())
+                .requestMatchers("/pot/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())
+                .requestMatchers("/user/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())
+                .requestMatchers("/suspicious/client/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())
+                .requestMatchers("/suspicious/server/**").permitAll()
+                .requestMatchers("/**").denyAll()
             )
             .exceptionHandling(exception -> exception
                 .authenticationEntryPoint(customAuthenticationEntryPoint()))
@@ -80,7 +86,7 @@ public class SecurityConfig {
                 .failureHandler(jsonAuthFailureHandler())
             )
             .logout(logout -> logout
-                .deleteCookies("JSESSIONID","authenticated")
+                .deleteCookies("JSESSIONID")
                 .invalidateHttpSession(true)
                 .logoutSuccessHandler(jsonLogoutSuccessHandler())
             )

@@ -5,12 +5,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.honeynet.dto.PaginatedSuspiciousActivities;
 import me.utku.honeynet.dto.SuspiciousActivityFilter;
+import me.utku.honeynet.dto.security.CustomUserDetails;
 import me.utku.honeynet.enums.PotCategory;
+import me.utku.honeynet.enums.UserRole;
 import me.utku.honeynet.model.SuspiciousActivity;
+import me.utku.honeynet.model.User;
 import me.utku.honeynet.repository.SuspiciousRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -22,9 +28,11 @@ import java.util.*;
 public class SuspiciousActivityService {
     private final SuspiciousRepository suspiciousRepository;
     private final JWTService jwtService;
+    private final UserService userService;
+    private final FirmService firmService;
     private static final String TOKEN_HEADER = "In-App-Auth-Token";
 
-    public PaginatedSuspiciousActivities createPaginatedSuspiciousActivityResponse(Page<SuspiciousActivity> activities, int page, int size){
+    public PaginatedSuspiciousActivities createPaginatedSuspiciousActivity(Page<SuspiciousActivity> activities, int page, int size){
         PaginatedSuspiciousActivities paginatedSuspiciousActivities = new PaginatedSuspiciousActivities();
         paginatedSuspiciousActivities.setActivityList(activities.getContent());
         paginatedSuspiciousActivities.setCurrentPage(Long.valueOf(page));
@@ -38,7 +46,7 @@ public class SuspiciousActivityService {
         try {
             Pageable pageable = PageRequest.of(page,size);
             Page<SuspiciousActivity> activities = suspiciousRepository.findAll(pageable);
-            return createPaginatedSuspiciousActivityResponse(activities,page,size);
+            return createPaginatedSuspiciousActivity(activities,page,size);
         } catch (Exception error) {
             log.error("SuspiciousActivity service getAllActivities exception: {}", error.getMessage());
             return null;
@@ -55,7 +63,7 @@ public class SuspiciousActivityService {
         return suspiciousActivity;
     }
 
-    public PaginatedSuspiciousActivities filterActivities(SuspiciousActivityFilter suspiciousActivityFilter, int page, int size){
+    public PaginatedSuspiciousActivities filterActivities(String firmId, CustomUserDetails userDetails, SuspiciousActivityFilter suspiciousActivityFilter, int page, int size){
         try {
             if(suspiciousActivityFilter.getDateFilters().length != 2){
                 suspiciousActivityFilter.setDateFilters(new LocalDateTime[]{
@@ -66,14 +74,21 @@ public class SuspiciousActivityService {
             if(suspiciousActivityFilter.getCategoryFilters().isEmpty()){
                 suspiciousActivityFilter.setCategoryFilters(List.of(PotCategory.values()));
             }
+            User user = userService.get(userDetails.getId());
             Pageable pageable = PageRequest.of(page,size);
-            Page<SuspiciousActivity> activities = suspiciousRepository.findAllByOriginContainsAndCategoryInAndDateBetween(
+            Page<SuspiciousActivity> activities = null;
+            if(user.getRole() == UserRole.SUPER_ADMIN){
+                 user.setFirm(firmService.get(firmId));
+            }
+            activities = suspiciousRepository.findAllByHoneypotIdFirm_IdAndOriginContainsAndCategoryInAndDateBetween(
+                user.getFirm().getId(),
                 suspiciousActivityFilter.getOriginFilter(),
                 suspiciousActivityFilter.getCategoryFilters(),
                 suspiciousActivityFilter.getDateFilters()[0],
                 suspiciousActivityFilter.getDateFilters()[1],
-                pageable);
-            return createPaginatedSuspiciousActivityResponse(activities,page,size);
+                pageable
+            );
+            return createPaginatedSuspiciousActivity(activities,page,size);
         } catch (Exception error) {
             log.error("SuspiciousActivity service filterActivities exception: {}", error.getMessage());
             return null;
