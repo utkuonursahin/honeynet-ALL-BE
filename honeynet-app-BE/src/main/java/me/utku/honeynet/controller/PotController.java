@@ -13,7 +13,6 @@ import me.utku.honeynet.service.RestService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -54,11 +53,12 @@ public class PotController {
     return GenericResponse.<Pot>builder().data(pot).build();
   }
 
-  @PostMapping("/setup/{potId}")
-  public GenericResponse<Boolean> setupPot(@PathVariable String potId){
-    Boolean result = potService.setup(potId);
+  @PostMapping("/setup")
+  public GenericResponse<Boolean> setupPot(@RequestParam String potId,@RequestParam String firmId){
+    Boolean result = potService.setup(potId, firmId);
     return GenericResponse.<Boolean>builder().data(result).build();
   }
+
 
   @PostMapping("/phishing-email")
   public GenericResponse<EmailListener> createEmailListener(@RequestBody EmailSetupRequest emailSetupRequest){

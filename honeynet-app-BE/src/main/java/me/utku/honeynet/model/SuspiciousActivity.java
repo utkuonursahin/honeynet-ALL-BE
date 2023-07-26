@@ -14,14 +14,14 @@ public class SuspiciousActivity extends Base{
     private String origin;
     private PotCategory category;
     @DBRef
-    private Pot honeypot;
+    private Firm firm;
     private Object payload;
     private LocalDateTime date;
 
-    @JsonProperty("honeypot")
-    public void deserializeFirm(String potId){
-        Pot potObj = new Pot();
-        potObj.setId(potId);
-        this.honeypot = potObj;
+    @JsonProperty("firm")
+    public void deserializeFirm(String firmId){
+        Firm firmObj = new Firm();
+        firmObj.setId(firmId);
+        this.firm = firmObj;
     }
 }

@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>me.utku</groupId>
-	<artifactId>firm-app-BE</artifactId>
+	<artifactId>honeynet-app-BE</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>firm</name>
 	<description>Intern project.</description>

@@ -80,8 +80,7 @@ public class SuspiciousActivityService {
             if(user.getRole() == UserRole.SUPER_ADMIN){
                  user.setFirm(firmService.get(firmId));
             }
-            activities = suspiciousRepository.findAllByHoneypot_Firm_IdAndOriginContainsAndCategoryInAndDateBetween(
-                user.getFirm().getId(),
+            activities = suspiciousRepository.findAllByOriginContainsAndCategoryInAndDateBetween(
                 suspiciousActivityFilter.getOriginFilter(),
                 suspiciousActivityFilter.getCategoryFilters(),
                 suspiciousActivityFilter.getDateFilters()[0],
@@ -100,7 +99,7 @@ public class SuspiciousActivityService {
         try {
             String authToken = httpServletRequest.getHeader(TOKEN_HEADER);
             if(authToken != null && jwtService.validateJWT(authToken)){
-                suspiciousActivity.setId(UUID.randomUUID().toString());
+                newSuspiciousActivity.setId(UUID.randomUUID().toString());
                 suspiciousActivity = suspiciousRepository.save(newSuspiciousActivity);
             }
         } catch (Exception error) {

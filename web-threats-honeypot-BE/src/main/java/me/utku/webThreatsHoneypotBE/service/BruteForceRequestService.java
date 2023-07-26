@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -105,6 +106,7 @@ public class BruteForceRequestService {
     public BruteForceRequest create(BruteForceRequest newBruteForceRequest){
         BruteForceRequest bruteForceRequest = new BruteForceRequest();
         try{
+            newBruteForceRequest.setId(UUID.randomUUID().toString());
             bruteForceRequest = bruteForceRequestRepository.save(newBruteForceRequest);
         }catch (Exception error){
             log.error("BruteForceRequestService create exception: {}",error.getMessage());

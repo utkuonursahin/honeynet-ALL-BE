@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.honeynet.dto.security.CustomUserDetails;
 import me.utku.honeynet.enums.UserRole;
+import me.utku.honeynet.model.Firm;
 import me.utku.honeynet.model.Pot;
+import me.utku.honeynet.model.ServerInfo;
 import me.utku.honeynet.model.User;
 import me.utku.honeynet.repository.PotRepository;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,7 +26,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PotService {
     private final UserService userService;
-    private final FirmService firmService;
+    private final ServerInfoService serverInfoService;
     private final PotRepository potRepository;
 
     public List<Pot> getAll() {
@@ -45,9 +48,13 @@ public class PotService {
             } else if(user.getRole() == UserRole.ADMIN){
                 session.setAttribute("firmId", user.getFirm().getId());
             }
-            pots = potRepository.findAllByFirm_Id(session.getAttribute("firmId").toString());
+            pots = potRepository.findAll();
+            pots.stream().map(pot -> {
+                pot.setServerInfoList(null);
+                return pot;
+            });
         } catch (Exception exception) {
-            log.error("Pot service getAllByUser exception: {}", exception.getMessage());
+            log.error("Pot service getAll exception: {}", exception.getMessage());
         }
         return pots;
     }
@@ -95,8 +102,8 @@ public class PotService {
         try{
             existPot = potRepository.findById(potId).orElse(null);
             if (existPot == null) throw new Exception("No pot found with given id!");
-            if(updatedParts.getFirm() != null){
-                existPot.setFirm(updatedParts.getFirm());
+            if(updatedParts.getServerInfoList() != null){
+                existPot.setServerInfoList(updatedParts.getServerInfoList());
             }
             potRepository.save(existPot);
         }catch(Exception exception){
@@ -116,9 +123,23 @@ public class PotService {
         return isDeleted;
     }
 
-    public Boolean setup(String potId){
+    public Boolean setup(String potId, String firmId){
         try {
-            Runtime.getRuntime().exec("cmd /c cd C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\web-threats-honeypot-BE\\target & java -jar web-threats-honeypot-BE-0.0.1-SNAPSHOT.jar --honeypot.id="+potId);
+            Pot pot = potRepository.findById(potId).orElse(null);
+            if(pot == null) throw new Exception("No pot found with given id");
+            ServerInfo serverInfo = serverInfoService.create(potId,firmId);
+            HashSet<ServerInfo> newList = pot.getServerInfoList();
+            if(newList == null) newList = new HashSet<>();
+            newList.add(serverInfo);
+            pot.setServerInfoList(newList);
+            update(potId,pot);
+            Runtime.getRuntime()
+                .exec("cmd /c cd "
+                    + pot.getServerPath()
+                    + " --be.id="+serverInfo.getId()
+                    + " --be.firmId="+firmId
+                    + " --server.port="+serverInfo.getPort()
+                );
             return true;
         }catch (Exception error){
             log.error("Pot service setup exception: {}",error.getMessage());

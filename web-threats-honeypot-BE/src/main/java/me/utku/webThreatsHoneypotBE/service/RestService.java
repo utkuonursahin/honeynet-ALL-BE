@@ -40,8 +40,8 @@ public class RestService {
         }
     }
 
-    @Value("${honeypot.id}")
-    private String honeypotId;
+    @Value("${be.firmId}")
+    private String firmId;
 
     public Map<String,Object> generateBody(BruteForceRequest bruteForceRequest){
         Map<String,Object> payload = new HashMap<>();
@@ -51,7 +51,7 @@ public class RestService {
         Map<String,Object> map = new HashMap<>();
         map.put("origin", bruteForceRequest.getOrigin());
         map.put("category", "BRUTE_FORCE");
-        map.put("honeypot",honeypotId);
+        map.put("firm",firmId);
         map.put("payload", payload);
         map.put("date", LocalDateTime.now());
         return map;
@@ -64,12 +64,11 @@ public class RestService {
         Map<String,Object> map = new HashMap<>();
         map.put("origin", pathTraversalRequest.getOrigin());
         map.put("category", "PATH_TRAVERSAL");
-        map.put("honeypot",honeypotId);
+        map.put("firm",firmId);
         map.put("payload", payload);
         map.put("date", LocalDateTime.now());
         return map;
     }
-
 
     public void post(Map<String,Object> map, HttpHeaders headers){
         String url = "http://localhost:8080/suspicious/server";
