@@ -43,15 +43,21 @@ public class PotController {
   }
 
   @GetMapping("/phishing-email")
-    public GenericResponse<List<EmailListener>> getEmailListener(){
-        List<EmailListener> emailListeners = restService.forwardGetALlEmailListeners();
-        return GenericResponse.<List<EmailListener>>builder().data(emailListeners).build();
-    }
+  public GenericResponse<List<EmailListener>> getEmailListener(){
+    List<EmailListener> emailListeners = restService.forwardGetALlEmailListeners();
+    return GenericResponse.<List<EmailListener>>builder().data(emailListeners).build();
+  }
 
   @PostMapping
   public GenericResponse<Pot> createPot(@RequestBody Pot newPot){
     Pot pot = potService.create(newPot);
     return GenericResponse.<Pot>builder().data(pot).build();
+  }
+
+  @PostMapping("/setup/{potId}")
+  public GenericResponse<Boolean> setupPot(@PathVariable String potId){
+    Boolean result = potService.setup(potId);
+    return GenericResponse.<Boolean>builder().data(result).build();
   }
 
   @PostMapping("/phishing-email")

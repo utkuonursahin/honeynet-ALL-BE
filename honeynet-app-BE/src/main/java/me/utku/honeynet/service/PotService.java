@@ -115,4 +115,14 @@ public class PotService {
         }
         return isDeleted;
     }
+
+    public Boolean setup(String potId){
+        try {
+            Runtime.getRuntime().exec("cmd /c cd C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\web-threats-honeypot-BE\\target & java -jar web-threats-honeypot-BE-0.0.1-SNAPSHOT.jar --honeypot.id="+potId);
+            return true;
+        }catch (Exception error){
+            log.error("Pot service setup exception: {}",error.getMessage());
+            return false;
+        }
+    }
 }

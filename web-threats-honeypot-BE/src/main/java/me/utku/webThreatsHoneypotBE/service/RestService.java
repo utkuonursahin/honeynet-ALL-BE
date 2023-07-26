@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.utku.webThreatsHoneypotBE.dto.SuspiciousActivity;
 import me.utku.webThreatsHoneypotBE.model.BruteForceRequest;
 import me.utku.webThreatsHoneypotBE.dto.PathTraversalRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -39,6 +40,9 @@ public class RestService {
         }
     }
 
+    @Value("${honeypot.id}")
+    private String honeypotId;
+
     public Map<String,Object> generateBody(BruteForceRequest bruteForceRequest){
         Map<String,Object> payload = new HashMap<>();
         payload.put("username", bruteForceRequest.getPayloadUsername());
@@ -46,9 +50,9 @@ public class RestService {
 
         Map<String,Object> map = new HashMap<>();
         map.put("origin", bruteForceRequest.getOrigin());
-        map.put("payload", payload);
         map.put("category", "BRUTE_FORCE");
-        map.put("potName","Web Threats Pot");
+        map.put("honeypot",honeypotId);
+        map.put("payload", payload);
         map.put("date", LocalDateTime.now());
         return map;
     }
@@ -59,9 +63,9 @@ public class RestService {
 
         Map<String,Object> map = new HashMap<>();
         map.put("origin", pathTraversalRequest.getOrigin());
-        map.put("payload", payload);
         map.put("category", "PATH_TRAVERSAL");
-        map.put("potName","Web Threats Pot");
+        map.put("honeypot",honeypotId);
+        map.put("payload", payload);
         map.put("date", LocalDateTime.now());
         return map;
     }

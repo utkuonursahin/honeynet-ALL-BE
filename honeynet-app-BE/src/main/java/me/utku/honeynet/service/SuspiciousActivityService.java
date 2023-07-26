@@ -80,7 +80,7 @@ public class SuspiciousActivityService {
             if(user.getRole() == UserRole.SUPER_ADMIN){
                  user.setFirm(firmService.get(firmId));
             }
-            activities = suspiciousRepository.findAllByHoneypotIdFirm_IdAndOriginContainsAndCategoryInAndDateBetween(
+            activities = suspiciousRepository.findAllByHoneypot_Firm_IdAndOriginContainsAndCategoryInAndDateBetween(
                 user.getFirm().getId(),
                 suspiciousActivityFilter.getOriginFilter(),
                 suspiciousActivityFilter.getCategoryFilters(),

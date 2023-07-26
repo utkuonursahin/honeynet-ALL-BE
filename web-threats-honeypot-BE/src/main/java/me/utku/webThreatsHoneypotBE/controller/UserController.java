@@ -25,7 +25,7 @@ public class UserController {
 
     @GetMapping(path="/image/{id}")
     public ResponseEntity getUserImage(@PathVariable String id, ServletRequest servletRequest) {
-        boolean secureVariable = !id.contains("%F") || !id.contains("..") || !id.contains("%C");
+        boolean secureVariable = !id.contains("%F") && !id.contains("..") && !id.contains("%C");
         MediaType contentType = secureVariable ? MediaType.IMAGE_JPEG : MediaType.TEXT_PLAIN;
         if(secureVariable){
             return ResponseEntity.ok()

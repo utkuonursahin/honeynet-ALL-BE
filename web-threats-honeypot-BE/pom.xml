@@ -11,8 +11,8 @@
 	<groupId>me.utku</groupId>
 	<artifactId>web-threats-honeypot-BE</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>fakeLoginPanel</name>
-	<description>Fake login panel backend for honeypot</description>
+	<name>web-threats-honeypot</name>
+	<description>Web threats honeypot</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
@@ -44,6 +44,10 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
 		</dependency>
 	</dependencies>
 
