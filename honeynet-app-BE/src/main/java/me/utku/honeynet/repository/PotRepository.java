@@ -7,5 +7,4 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface PotRepository extends MongoRepository<Pot,String> {
-    List<Pot> findAllByServerInfoListContains(ServerInfo serverInfo);
 }

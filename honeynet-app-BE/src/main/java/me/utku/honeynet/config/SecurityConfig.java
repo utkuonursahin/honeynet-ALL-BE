@@ -71,7 +71,6 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(req -> req
-                .requestMatchers("/super-admin/**").hasAuthority(UserRole.SUPER_ADMIN.toString())
                 .requestMatchers("/firm/**").hasAuthority(UserRole.SUPER_ADMIN.toString())
                 .requestMatchers("/pot/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())
                 .requestMatchers("/user/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())

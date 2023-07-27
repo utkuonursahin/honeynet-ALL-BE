@@ -80,7 +80,8 @@ public class SuspiciousActivityService {
             if(user.getRole() == UserRole.SUPER_ADMIN){
                  user.setFirm(firmService.get(firmId));
             }
-            activities = suspiciousRepository.findAllByOriginContainsAndCategoryInAndDateBetween(
+            activities = suspiciousRepository.findAllByFirmAndOriginContainsAndCategoryInAndDateBetween(
+                user.getFirm().getId(),
                 suspiciousActivityFilter.getOriginFilter(),
                 suspiciousActivityFilter.getCategoryFilters(),
                 suspiciousActivityFilter.getDateFilters()[0],

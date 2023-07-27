@@ -27,6 +27,7 @@ import java.util.UUID;
 public class PotService {
     private final UserService userService;
     private final ServerInfoService serverInfoService;
+    private final FirmService firmService;
     private final PotRepository potRepository;
 
     public List<Pot> getAll() {
@@ -49,10 +50,6 @@ public class PotService {
                 session.setAttribute("firmId", user.getFirm().getId());
             }
             pots = potRepository.findAll();
-            pots.stream().map(pot -> {
-                pot.setServerInfoList(null);
-                return pot;
-            });
         } catch (Exception exception) {
             log.error("Pot service getAll exception: {}", exception.getMessage());
         }
@@ -102,9 +99,6 @@ public class PotService {
         try{
             existPot = potRepository.findById(potId).orElse(null);
             if (existPot == null) throw new Exception("No pot found with given id!");
-            if(updatedParts.getServerInfoList() != null){
-                existPot.setServerInfoList(updatedParts.getServerInfoList());
-            }
             potRepository.save(existPot);
         }catch(Exception exception){
             log.error("Pot service update exception: {}",exception.getMessage());
@@ -126,13 +120,9 @@ public class PotService {
     public Boolean setup(String potId, String firmId){
         try {
             Pot pot = potRepository.findById(potId).orElse(null);
-            if(pot == null) throw new Exception("No pot found with given id");
-            ServerInfo serverInfo = serverInfoService.create(potId,firmId);
-            HashSet<ServerInfo> newList = pot.getServerInfoList();
-            if(newList == null) newList = new HashSet<>();
-            newList.add(serverInfo);
-            pot.setServerInfoList(newList);
-            update(potId,pot);
+            Firm firm = firmService.get(firmId);
+            if(pot == null || firm == null) throw new Exception("No pot/firm found with given id");
+            ServerInfo serverInfo = serverInfoService.create(pot,firm);
             Runtime.getRuntime()
                 .exec("cmd /c cd "
                     + pot.getServerPath()

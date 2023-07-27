@@ -13,6 +13,6 @@ import java.util.List;
 
 public interface SuspiciousRepository extends MongoRepository<SuspiciousActivity,String> {
     @Query
-    Page<SuspiciousActivity> findAllByOriginContainsAndCategoryInAndDateBetween(String originFilter, List<PotCategory> categoryFilters,
+    Page<SuspiciousActivity> findAllByFirmAndOriginContainsAndCategoryInAndDateBetween(String firmId, String originFilter, List<PotCategory> categoryFilters,
                                                                                 LocalDateTime start, LocalDateTime end, Pageable pageable);
 }

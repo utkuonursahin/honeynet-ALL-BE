@@ -3,6 +3,7 @@ package me.utku.emailhoneypot.service;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.emailhoneypot.dto.EmailContent;
 import me.utku.emailhoneypot.dto.SuspiciousActivity;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -40,11 +41,14 @@ public class RestService {
         }
     }
 
+    @Value("${be.firmId}")
+    private String firmId;
     public Map<String,Object> generateBody(EmailContent emailContent){
         Map<String,Object> payload = new HashMap<>();
         payload.put("subject", emailContent.getSubject());
 
         Map<String,Object> map = new HashMap<>();
+        map.put("firm", firmId);
         map.put("origin", emailContent.getOrigin());
         map.put("payload", payload);
         map.put("category", "EMAIL");

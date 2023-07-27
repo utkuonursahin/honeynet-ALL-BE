@@ -3,6 +3,7 @@ package me.utku.webscrapinghoneypotBE.service;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.webscrapinghoneypotBE.dto.SuspiciousActivity;
 import me.utku.webscrapinghoneypotBE.dto.ScrawlAttempt;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -37,12 +38,15 @@ public class RestService {
             return null;
         }
     }
+    @Value("${be.firmId}")
+    private String firmId;
 
     public Map<String,Object> generateBody(ScrawlAttempt scrawlAttempt){
         Map<String,Object> payload = new HashMap<>();
         payload.put("targetElementId", scrawlAttempt.getTargetElementId());
 
         Map<String,Object> map = new HashMap<>();
+        map.put("firm",firmId);
         map.put("origin", scrawlAttempt.getOrigin());
         map.put("payload", payload);
         map.put("category", "WEB_SCRAPING");

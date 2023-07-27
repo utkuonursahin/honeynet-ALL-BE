@@ -11,10 +11,11 @@ import java.time.LocalDateTime;
 @Data
 @Document
 public class SuspiciousActivity extends Base{
-    private String origin;
-    private PotCategory category;
     @DBRef
     private Firm firm;
+    private String origin;
+    private PotCategory category;
+    private String potName;
     private Object payload;
     private LocalDateTime date;
 
