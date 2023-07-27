@@ -3,6 +3,7 @@ package me.utku.honeynet.service;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.honeynet.dto.EmailListener;
 import me.utku.honeynet.dto.EmailSetupRequest;
+import me.utku.honeynet.model.ServerInfo;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -16,12 +17,15 @@ import java.util.*;
 @Service
 @Slf4j
 public class RestService {
+    private String EMAIL_LISTENER_URL;
+    private final ServerInfoService serverInfoService;
     private final RestTemplate restTemplate;
     private final JWTService jwtService;
 
-    public RestService(RestTemplateBuilder restTemplateBuilder, JWTService jwtService) {
+    public RestService(RestTemplateBuilder restTemplateBuilder, JWTService jwtService, ServerInfoService serverInfoService) {
         this.restTemplate = restTemplateBuilder.build();
         this.jwtService = jwtService;
+        this.serverInfoService = serverInfoService;
     }
 
     public HttpHeaders generateHeaders(){
@@ -45,32 +49,34 @@ public class RestService {
         return map;
     }
 
+    public void findServerInfo(String potId,String firmId){
+        ServerInfo serverInfo = serverInfoService.getByPotIdAndFirmId(potId,firmId);
+        EMAIL_LISTENER_URL = "http://localhost:"+serverInfo.getPort()+"/email-listener";
+    }
+
     public List<EmailListener> get(HttpHeaders headers){
-        String url = "http://localhost:8083/email-listener";
         HttpEntity<String> request = new HttpEntity<>(headers);
-        return this.restTemplate.exchange(url, HttpMethod.GET, request, List.class).getBody();
+        return this.restTemplate.exchange(EMAIL_LISTENER_URL, HttpMethod.GET, request, List.class).getBody();
     }
 
     public EmailListener post(Map<String,Object> body, HttpHeaders headers){
-        String url = "http://localhost:8083/email-listener";
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-        return this.restTemplate.postForEntity(url,request, EmailListener.class).getBody();
+        return this.restTemplate.postForEntity(EMAIL_LISTENER_URL,request, EmailListener.class).getBody();
     }
 
     public EmailListener put(String id, Map<String,Object> body, HttpHeaders headers){
-        String url = "http://localhost:8083/email-listener"+"/"+id;
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-        return this.restTemplate.exchange(url, HttpMethod.PUT,request, EmailListener.class).getBody();
+        return this.restTemplate.exchange(EMAIL_LISTENER_URL+"/"+id, HttpMethod.PUT,request, EmailListener.class).getBody();
     }
 
     public Boolean delete(String id,HttpHeaders headers){
-        String url = "http://localhost:8083/email-listener"+"/"+id;
         HttpEntity<String> request = new HttpEntity<>(headers);
-        this.restTemplate.exchange(url, HttpMethod.DELETE,request,Void.class);
+        this.restTemplate.exchange(EMAIL_LISTENER_URL+"/"+id, HttpMethod.DELETE,request,Void.class);
         return true;
     }
 
-    public List<EmailListener> forwardGetALlEmailListeners(){
+    public List<EmailListener> forwardGetAllEmailListeners(String potId,String firmId){
+        findServerInfo(potId,firmId);
         List<EmailListener> emailListeners = new ArrayList<>();
         try{
             HttpHeaders headers = generateHeaders();
@@ -81,8 +87,9 @@ public class RestService {
         return emailListeners;
     }
 
-    public EmailListener forwardCreateEmailListener(EmailSetupRequest emailSetupRequest){
+    public EmailListener forwardCreateEmailListener(String potId, String firmId,EmailSetupRequest emailSetupRequest){
         try{
+            findServerInfo(potId,firmId);
             HttpHeaders headers = generateHeaders();
             Map<String, Object> body = generateBody(emailSetupRequest);
             return post(body,headers);
@@ -92,8 +99,9 @@ public class RestService {
         }
     }
 
-    public EmailListener forwardUpdateEmailListener(String id, EmailListener updatePart){
+    public EmailListener forwardUpdateEmailListener(String id, String potId, String firmId, EmailListener updatePart){
         try{
+            findServerInfo(potId,firmId);
             HttpHeaders headers = generateHeaders();
             Map<String,Object> body = new HashMap<>();
             body.put("status", updatePart.getStatus());
@@ -104,8 +112,9 @@ public class RestService {
         }
     }
 
-    public Boolean forwardDeleteEmailListener(String id){
+    public Boolean forwardDeleteEmailListener(String id,String potId, String firmId){
         try{
+            findServerInfo(potId,firmId);
             HttpHeaders headers = generateHeaders();
             return delete(id,headers);
         } catch (Exception error){

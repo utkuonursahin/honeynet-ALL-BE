@@ -29,6 +29,10 @@ public class ServerInfoService {
         }
     }
 
+    public ServerInfo getByPotIdAndFirmId(String potId,String firmId){
+        return serverInfoRepository.findByPotIdAndFirmId(potId,firmId);
+    }
+
     public ServerInfo create(Pot pot, Firm firm){
         ServerInfo serverInfo = new ServerInfo();
         try{

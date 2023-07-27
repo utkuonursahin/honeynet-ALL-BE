@@ -13,6 +13,7 @@ import me.utku.emailhoneypot.enums.EmailListenerStatus;
 import me.utku.emailhoneypot.dto.EmailContent;
 import me.utku.emailhoneypot.model.EmailListener;
 import me.utku.emailhoneypot.repository.EmailListenerRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -51,13 +52,16 @@ public class EmailListenerService extends MessageCountAdapter {
         }
     }
 
+    @Value("${be.firmId}")
+    private String firmId;
     public EmailListener create(EmailSetupRequest emailSetupRequest, HttpServletRequest httpServletRequest) {
         EmailListener emailListener = new EmailListener();
         String authToken = httpServletRequest.getHeader("In-App-Auth-Token");
         if (authToken != null && jwtService.validateJWT(authToken)) {
             emailListener.setEmail(emailSetupRequest.getEmail());
-            emailListener.setPassword(emailSetupRequest.getPassword());
+            emailListener.setPassword(KeyService.encrypt(emailSetupRequest.getPassword()));
             emailListener.setStatus(EmailListenerStatus.LISTEN);
+            emailListener.setFirmId(firmId);
             if(emailListenerRepository.existsByEmail(emailListener.getEmail())){
                 return emailListenerRepository.findByEmail(emailListener.getEmail());
             }
@@ -67,9 +71,9 @@ public class EmailListenerService extends MessageCountAdapter {
         return emailListener;
     }
 
-    @Scheduled(fixedRate = 1000 * 10)
+    @Scheduled(fixedRate = 1000 * 10 * 10)
     public void checkEmails() {
-        for (EmailListener emailListener : emailListenerRepository.findAll()) {
+        for (EmailListener emailListener : emailListenerRepository.findAllByFirmId(firmId)) {
             System.out.println("Email listener: " + emailListener);
             if (emailListener != null && emailListener.getStatus().equals(EmailListenerStatus.LISTEN)) {
                 try {
@@ -80,7 +84,7 @@ public class EmailListenerService extends MessageCountAdapter {
                     Session session = Session.getInstance(props);
 
                     Store store = session.getStore("imaps");
-                    store.connect(emailListener.getEmail(), emailListener.getPassword());
+                    store.connect(emailListener.getEmail(), KeyService.decrypt(emailListener.getPassword()));
 
                     IMAPFolder inbox = (IMAPFolder) store.getFolder("INBOX");
                     inbox.open(Folder.READ_WRITE);
