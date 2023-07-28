@@ -3,6 +3,7 @@ package me.utku.webThreatsHoneypotBE.model;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Data
 @Document
+@TypeAlias("Brute-Force")
 public class BruteForceRequest extends Base{
     private String origin;
     private int randAuthenticateNumber;
