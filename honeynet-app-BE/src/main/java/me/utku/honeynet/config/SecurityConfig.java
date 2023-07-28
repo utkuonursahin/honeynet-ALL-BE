@@ -11,6 +11,7 @@ import me.utku.honeynet.repository.UserRepository;
 import me.utku.honeynet.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -19,6 +20,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -30,7 +32,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
     private final ObjectMapper objectMapper;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -47,7 +49,7 @@ public class SecurityConfig {
 
     @Bean
     public JsonAuthSuccessHandler jsonAuthSuccessHandler() {
-        return new JsonAuthSuccessHandler(objectMapper,userRepository);
+        return new JsonAuthSuccessHandler(objectMapper, userService);
     }
 
     @Bean
@@ -66,15 +68,28 @@ public class SecurityConfig {
     }
 
     @Bean
+    public SwitchUserFilter switchUserFilter() {
+        SwitchUserFilter filter = new SwitchUserFilter();
+        filter.setUserDetailsService(userService);
+        filter.setSuccessHandler(jsonAuthSuccessHandler());
+        filter.setFailureHandler(jsonAuthFailureHandler());
+        return filter;
+    }
+
+    @Bean
     SecurityFilterChain filterChain (HttpSecurity http) throws Exception{
         return http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
+            .addFilterAfter(switchUserFilter(), SwitchUserFilter.class)
             .authorizeHttpRequests(req -> req
+                .requestMatchers("/login/impersonate").hasAuthority(UserRole.SUPER_ADMIN.toString())
+                .requestMatchers("/logout/impersonate").hasAuthority(UserRole.ADMIN.toString())
+                .requestMatchers("/firm/image/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())
                 .requestMatchers("/firm/**").hasAuthority(UserRole.SUPER_ADMIN.toString())
-                .requestMatchers("/pot/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())
+                .requestMatchers("/pot/**").hasAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/user/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())
-                .requestMatchers("/suspicious/client/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())
+                .requestMatchers("/suspicious/client/**").hasAnyAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/suspicious/server/**").permitAll()
                 .requestMatchers("/**").denyAll()
             )

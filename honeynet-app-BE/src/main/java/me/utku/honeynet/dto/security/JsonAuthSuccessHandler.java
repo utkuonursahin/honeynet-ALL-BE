@@ -5,7 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import me.utku.honeynet.model.User;
-import me.utku.honeynet.repository.UserRepository;
+import me.utku.honeynet.service.UserService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
@@ -16,14 +16,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JsonAuthSuccessHandler implements AuthenticationSuccessHandler {
   private final ObjectMapper objectMapper;
-  private final UserRepository userRepository;
+  private final UserService userService;
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
     response.setStatus(HttpServletResponse.SC_OK);
     response.setContentType("application/json");
     CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-    User user = userRepository.findById(userDetails.getId()).orElse(null);
+    User user = userService.get(userDetails.getId());
     // Customize the JSON response
     Map<String, Object> jsonResponse = new HashMap<>();
     jsonResponse.put("statusCode", HttpServletResponse.SC_OK);

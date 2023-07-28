@@ -72,4 +72,11 @@ public class UserController {
       return GenericResponse.<Boolean>builder().data(false).statusCode(401).build();
     }
   }
+
+  @GetMapping("/find-user-to-switch")
+  public GenericResponse<User> findUserToSwitch(@RequestParam String firmId){
+    User user = userService.getByFirmId(firmId);
+    return GenericResponse.<User>builder().data(user).statusCode(200).build();
+  }
+
 }
