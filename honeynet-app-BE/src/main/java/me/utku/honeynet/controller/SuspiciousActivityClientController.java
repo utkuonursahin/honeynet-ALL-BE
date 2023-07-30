@@ -31,12 +31,11 @@ public class SuspiciousActivityClientController {
 
     @PostMapping("/filter")
     public GenericResponse<PaginatedSuspiciousActivities> getFilteredActivities(
-        @RequestParam(required = false) String firmId,
         @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestParam(defaultValue = "0") int page,
         @RequestParam(defaultValue = "20") int size,
         @RequestBody SuspiciousActivityFilter suspiciousActivityFilter) {
-        PaginatedSuspiciousActivities activities = suspiciousActivityService.filterActivities(firmId, userDetails, suspiciousActivityFilter, page, size);
+        PaginatedSuspiciousActivities activities = suspiciousActivityService.filterActivities(userDetails.getFirmRef(), suspiciousActivityFilter, page, size);
         return GenericResponse.<PaginatedSuspiciousActivities>builder().data(activities).statusCode(200).build();
     }
 }

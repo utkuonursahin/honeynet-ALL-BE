@@ -1,15 +1,11 @@
 package me.utku.honeynet.service;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.honeynet.dto.security.CustomUserDetails;
-import me.utku.honeynet.enums.UserRole;
 import me.utku.honeynet.model.Firm;
 import me.utku.honeynet.model.Pot;
 import me.utku.honeynet.model.ServerInfo;
-import me.utku.honeynet.model.User;
 import me.utku.honeynet.repository.PotRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +13,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +20,6 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class PotService {
-    private final UserService userService;
     private final ServerInfoService serverInfoService;
     private final FirmService firmService;
     private final PotRepository potRepository;
@@ -33,22 +27,6 @@ public class PotService {
     public List<Pot> getAll() {
         List<Pot> pots = new ArrayList<>();
         try {
-            pots = potRepository.findAll();
-        } catch (Exception exception) {
-            log.error("Pot service getAll exception: {}", exception.getMessage());
-        }
-        return pots;
-    }
-
-    public List<Pot> getAll(String firmId, CustomUserDetails userDetails, HttpSession session ) {
-        List<Pot> pots = new ArrayList<>();
-        try {
-            User user = userService.get(userDetails.getId());
-            if(user.getRole() == UserRole.SUPER_ADMIN){
-                session.setAttribute("firmId", firmId);
-            } else if(user.getRole() == UserRole.ADMIN){
-                session.setAttribute("firmId", user.getFirm().getId());
-            }
             pots = potRepository.findAll();
         } catch (Exception exception) {
             log.error("Pot service getAll exception: {}", exception.getMessage());
@@ -120,9 +98,8 @@ public class PotService {
     public Boolean setup(String potId, String firmId){
         try {
             Pot pot = potRepository.findById(potId).orElse(null);
-            Firm firm = firmService.get(firmId);
-            if(pot == null || firm == null) throw new Exception("No pot/firm found with given id");
-            ServerInfo serverInfo = serverInfoService.create(pot,firm);
+            if(pot == null) throw new Exception("No pot/firm found with given id");
+            ServerInfo serverInfo = serverInfoService.create(potId,firmId);
             Runtime.getRuntime()
                 .exec("cmd /c cd "
                     + pot.getServerPath()

@@ -2,7 +2,6 @@ package me.utku.honeynet.dto.security;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import me.utku.honeynet.model.Firm;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -15,6 +14,7 @@ public class CustomUserDetails implements UserDetails {
   private String id;
   private String username;
   private String password;
+  private String firmRef;
   private List<GrantedAuthority> authorities;
 
   @Override

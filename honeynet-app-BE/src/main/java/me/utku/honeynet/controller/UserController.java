@@ -1,7 +1,4 @@
 package me.utku.honeynet.controller;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import me.utku.honeynet.dto.security.CustomUserDetails;
 import me.utku.honeynet.dto.GenericResponse;
 import me.utku.honeynet.model.User;
@@ -50,14 +47,9 @@ public class UserController {
   }
 
   @GetMapping("/who-am-i")
-  public GenericResponse<User> me(HttpSession session,
-                                               HttpServletRequest request,
-                                               @AuthenticationPrincipal CustomUserDetails userDetails){
-    String sessionId = session.getId();
-    Cookie [] cookies = request.getCookies();
-    String cookie = cookies[0].getValue();
-    User user = userService.get(userDetails.getId());
-    if(sessionId.equals(cookie)){
+  public GenericResponse<User> me(@AuthenticationPrincipal CustomUserDetails userDetails){
+    if(userDetails != null){
+      User user = userService.get(userDetails.getId());
       return GenericResponse.<User>builder().data(user).statusCode(200).build();
     } else {
       return GenericResponse.<User>builder().data(null).statusCode(401).build();
@@ -75,8 +67,7 @@ public class UserController {
 
   @GetMapping("/find-user-to-switch")
   public GenericResponse<User> findUserToSwitch(@RequestParam String firmId){
-    User user = userService.getByFirmId(firmId);
+    User user = userService.getByFirm(firmId);
     return GenericResponse.<User>builder().data(user).statusCode(200).build();
   }
-
 }

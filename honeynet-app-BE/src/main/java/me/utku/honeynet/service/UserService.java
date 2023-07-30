@@ -49,10 +49,10 @@ public class UserService implements UserDetailsService {
     return user;
   }
 
-  public User getByFirmId(String firmId){
+  public User getByFirm(String firmId){
     User user = new User();
     try {
-      user = userRepository.findFirstByFirmId(firmId);
+      user = userRepository.findFirstByFirmRef(firmId);
     } catch (Exception exception) {
       log.error("User service get exception: {}", exception.getMessage());
     }
@@ -73,6 +73,7 @@ public class UserService implements UserDetailsService {
     return user;
   }
 
+  //NOT COMPLETED
   public User update(String id, User updatedParts) {
     User existingUser = new User();
     try {
@@ -106,6 +107,7 @@ public class UserService implements UserDetailsService {
         user.getId(),
         user.getUsername(),
         user.getPassword(),
+        user.getFirmRef(),
         AuthorityUtils.createAuthorityList(user.getRole().name())
     );
   }

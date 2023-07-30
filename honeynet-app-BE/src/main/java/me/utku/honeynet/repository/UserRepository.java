@@ -16,7 +16,7 @@ public interface UserRepository extends MongoRepository<User,String> {
   User findByUsername(String target);
 
   @Query(fields = "{password:0}")
-  User findFirstByFirmId(String firmId);
+  User findFirstByFirmRef(String firmId);
 
   Boolean existsByUsername(String username);
 }

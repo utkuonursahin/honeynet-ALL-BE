@@ -30,21 +30,21 @@ public class ServerInfoService {
     }
 
     public ServerInfo getByPotIdAndFirmId(String potId,String firmId){
-        return serverInfoRepository.findByPotIdAndFirmId(potId,firmId);
+        return serverInfoRepository.findByPotRefAndFirmRef(potId,firmId);
     }
 
-    public ServerInfo create(Pot pot, Firm firm){
+    public ServerInfo create(String potId, String firmId){
         ServerInfo serverInfo = new ServerInfo();
         try{
             serverInfo.setId(UUID.randomUUID().toString());
-            serverInfo.setPot(pot);
-            serverInfo.setFirm(firm);
+            serverInfo.setPotRef(potId);
+            serverInfo.setFirmRef(firmId);
             serverInfo.setPort(Integer.toString(findAvailablePort()));
-            Boolean isExists = serverInfoRepository.existsServerInfosByPotIdAndFirmId(pot.getId(),firm.getId());
+            Boolean isExists = serverInfoRepository.existsServerInfosByPotRefAndFirmRef(potId,firmId);
             if(!isExists){
                 serverInfo = serverInfoRepository.save(serverInfo);
             } else {
-                serverInfo = serverInfoRepository.findByPotIdAndFirmId(pot.getId(),firm.getId());
+                serverInfo = serverInfoRepository.findByPotRefAndFirmRef(potId,firmId);
             }
         }catch(Exception exception){
             log.error("ServerInfo service create exception: {}",exception.getMessage());

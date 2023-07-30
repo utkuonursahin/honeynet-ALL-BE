@@ -1,10 +1,8 @@
 package me.utku.honeynet.model;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import me.utku.honeynet.enums.PotCategory;
 import org.springframework.data.annotation.TypeAlias;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -13,18 +11,10 @@ import java.time.LocalDateTime;
 @Document
 @TypeAlias("Suspicious-Activity")
 public class SuspiciousActivity extends Base{
-    @DBRef
-    private Firm firm;
+    private String firmRef;
     private String origin;
     private PotCategory category;
     private String potName;
     private Object payload;
     private LocalDateTime date;
-
-    @JsonProperty("firm")
-    public void deserializeFirm(String firmId){
-        Firm firmObj = new Firm();
-        firmObj.setId(firmId);
-        this.firm = firmObj;
-    }
 }

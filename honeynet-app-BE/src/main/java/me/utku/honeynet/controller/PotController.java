@@ -4,9 +4,11 @@ import lombok.RequiredArgsConstructor;
 import me.utku.honeynet.dto.EmailListener;
 import me.utku.honeynet.dto.EmailSetupRequest;
 import me.utku.honeynet.dto.GenericResponse;
+import me.utku.honeynet.dto.security.CustomUserDetails;
 import me.utku.honeynet.model.Pot;
 import me.utku.honeynet.service.PotService;
 import me.utku.honeynet.service.RestService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,9 +40,9 @@ public class PotController {
     @GetMapping("/phishing-email")
     public GenericResponse<List<EmailListener>> getEmailListener(
         @RequestParam String potId,
-        @RequestParam String firmId
+        @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        List<EmailListener> emailListeners = restService.forwardGetAllEmailListeners(potId, firmId);
+        List<EmailListener> emailListeners = restService.forwardGetAllEmailListeners(potId, userDetails.getFirmRef());
         return GenericResponse.<List<EmailListener>>builder().data(emailListeners).build();
     }
 
@@ -51,8 +53,8 @@ public class PotController {
     }
 
     @PostMapping("/setup")
-    public GenericResponse<Boolean> setupPot(@RequestParam String potId, @RequestParam String firmId) {
-        Boolean result = potService.setup(potId, firmId);
+    public GenericResponse<Boolean> setupPot(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam String potId) {
+        Boolean result = potService.setup(potId, userDetails.getFirmRef());
         return GenericResponse.<Boolean>builder().data(result).build();
     }
 
@@ -60,9 +62,9 @@ public class PotController {
     @PostMapping("/phishing-email")
     public GenericResponse<EmailListener> createEmailListener(
         @RequestParam String potId,
-        @RequestParam String firmId,
+        @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestBody EmailSetupRequest emailSetupRequest) {
-        EmailListener emailListener = restService.forwardCreateEmailListener(potId, firmId, emailSetupRequest);
+        EmailListener emailListener = restService.forwardCreateEmailListener(potId, userDetails.getFirmRef(), emailSetupRequest);
         return GenericResponse.<EmailListener>builder().data(emailListener).build();
     }
 
@@ -76,9 +78,9 @@ public class PotController {
     public GenericResponse<EmailListener> updateEmailListener(
         @PathVariable String id,
         @RequestParam String potId,
-        @RequestParam String firmId,
+        @AuthenticationPrincipal CustomUserDetails userDetails,
         @RequestBody EmailListener updatePart) {
-        EmailListener emailListener = restService.forwardUpdateEmailListener(id, potId, firmId, updatePart);
+        EmailListener emailListener = restService.forwardUpdateEmailListener(id, potId, userDetails.getFirmRef(), updatePart);
         return GenericResponse.<EmailListener>builder().data(emailListener).build();
     }
 
@@ -92,8 +94,8 @@ public class PotController {
     public GenericResponse<Boolean> deleteEmailListener(
         @PathVariable String id,
         @RequestParam String potId,
-        @RequestParam String firmId) {
-        Boolean result = restService.forwardDeleteEmailListener(id,potId,firmId);
+        @AuthenticationPrincipal CustomUserDetails userDetails){
+        Boolean result = restService.forwardDeleteEmailListener(id,potId,userDetails.getFirmRef());
         return GenericResponse.<Boolean>builder().data(result).build();
     }
 }
