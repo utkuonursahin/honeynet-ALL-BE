@@ -13,6 +13,7 @@ public class Pot extends Base {
   private String description;
   private String clientUrl;
   private String serverPath;
+  private String serverFileName;
   private PotCategory[] category;
   private String previewImagePath;
 }

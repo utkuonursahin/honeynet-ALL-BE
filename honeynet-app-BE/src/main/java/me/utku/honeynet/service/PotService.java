@@ -95,22 +95,32 @@ public class PotService {
         return isDeleted;
     }
 
-    public Boolean setup(String potId, String firmId){
+    public String sanitize(String input){
+        String output = input.replaceAll("[|&]", "");
+        if(!output.equals(input)){
+            log.warn("Pot service sanitize warning: {} -> {}",input,output);
+        }
+        return output;
+    }
+
+    public ServerInfo setup(String potId, String firmId){
+        ServerInfo serverInfo = new ServerInfo();
         try {
             Pot pot = potRepository.findById(potId).orElse(null);
             if(pot == null) throw new Exception("No pot/firm found with given id");
-            ServerInfo serverInfo = serverInfoService.create(potId,firmId);
+            serverInfo = serverInfoService.create(potId,firmId);
             Runtime.getRuntime()
                 .exec("cmd /c cd "
-                    + pot.getServerPath()
-                    + " --be.id="+serverInfo.getId()
-                    + " --be.firmId="+firmId
-                    + " --server.port="+serverInfo.getPort()
+                    + sanitize(pot.getServerPath())
+                    + " & start java -jar "
+                    + sanitize(pot.getServerFileName())
+                    + " --be.id="+sanitize(serverInfo.getId())
+                    + " --be.firmId="+sanitize(serverInfo.getFirmRef())
+                    + " --server.port="+sanitize(serverInfo.getPort())
                 );
-            return true;
         }catch (Exception error){
             log.error("Pot service setup exception: {}",error.getMessage());
-            return false;
         }
+        return serverInfo;
     }
 }

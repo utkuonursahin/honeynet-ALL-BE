@@ -6,6 +6,7 @@ import me.utku.honeynet.dto.EmailSetupRequest;
 import me.utku.honeynet.dto.GenericResponse;
 import me.utku.honeynet.dto.security.CustomUserDetails;
 import me.utku.honeynet.model.Pot;
+import me.utku.honeynet.model.ServerInfo;
 import me.utku.honeynet.service.PotService;
 import me.utku.honeynet.service.RestService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -53,9 +54,9 @@ public class PotController {
     }
 
     @PostMapping("/setup")
-    public GenericResponse<Boolean> setupPot(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam String potId) {
-        Boolean result = potService.setup(potId, userDetails.getFirmRef());
-        return GenericResponse.<Boolean>builder().data(result).build();
+    public GenericResponse<ServerInfo> setupPot(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam String potId) {
+        ServerInfo result = potService.setup(potId, userDetails.getFirmRef());
+        return GenericResponse.<ServerInfo>builder().data(result).build();
     }
 
 

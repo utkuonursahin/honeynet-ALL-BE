@@ -10,4 +10,5 @@ public class EmailListener {
     private String email;
     private String password;
     private EmailListenerStatus status;
+    private String firmRef;
 }

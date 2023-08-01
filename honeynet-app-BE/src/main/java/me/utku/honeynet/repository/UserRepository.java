@@ -13,10 +13,8 @@ public interface UserRepository extends MongoRepository<User,String> {
   Optional<User> findById(@NonNull String id);
 
   @Query
-  User findByUsername(String target);
+  User findByEmail(String email);
 
   @Query(fields = "{password:0}")
   User findFirstByFirmRef(String firmId);
-
-  Boolean existsByUsername(String username);
 }

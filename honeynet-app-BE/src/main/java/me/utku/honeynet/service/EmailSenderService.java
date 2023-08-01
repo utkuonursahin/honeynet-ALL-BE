@@ -16,15 +16,14 @@ import java.util.Properties;
 public class EmailSenderService {
     private Session session;
     private String from = "fakemployeebeam@gmail.com";
-    private String to;
 
     public void init (){
         Properties props = new Properties();
         props.put("mail.smtp.auth", true);
         props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", "smtp.mailtrap.io");
+        props.put("mail.smtp.host", "smtp.gmail.com");
         props.put("mail.smtp.port", "25");
-        props.put("mail.smtp.ssl.trust", "smtp.mailtrap.io");
+        props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
 
         Authenticator auth = new Authenticator() {
             @Override

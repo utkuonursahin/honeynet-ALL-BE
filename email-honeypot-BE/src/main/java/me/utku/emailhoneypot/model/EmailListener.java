@@ -16,5 +16,5 @@ public class EmailListener extends Base{
     private String email;
     private String password;
     private EmailListenerStatus status;
-    private String firmId;
+    private String firmRef;
 }

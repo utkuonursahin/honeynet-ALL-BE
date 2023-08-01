@@ -120,11 +120,13 @@ public class SuspiciousActivityService {
 
     public boolean deleteActivity(String id, HttpServletRequest httpServletRequest ) {
         boolean isDeleted = false;
+        String origin = httpServletRequest.getRemoteAddr();
         try {
             String authToken = httpServletRequest.getHeader(TOKEN_HEADER);
             if(authToken != null && jwtService.validateJWT(authToken)){
                 suspiciousRepository.deleteById(id);
                 isDeleted = true;
+                log.info("SuspiciousActivity with id: {} deleted by {}", id, origin);
             }
         } catch (Exception error) {
             log.error("SuspiciousActivity service deleteActivity exception: {}", error.getMessage());

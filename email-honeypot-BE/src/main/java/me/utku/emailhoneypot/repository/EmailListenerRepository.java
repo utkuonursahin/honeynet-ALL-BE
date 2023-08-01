@@ -10,6 +10,6 @@ import java.util.List;
 public interface EmailListenerRepository extends MongoRepository<EmailListener,String> {
     boolean existsByEmail(String email);
     EmailListener findByEmail(String email);
-    List<EmailListener> findAllByFirmId(String firmId);
+    List<EmailListener> findAllByFirmRef(String firmId);
 
 }

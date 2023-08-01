@@ -14,6 +14,7 @@ public class CustomUserDetails implements UserDetails {
   private String id;
   private String username;
   private String password;
+  private String email;
   private String firmRef;
   private List<GrantedAuthority> authorities;
 

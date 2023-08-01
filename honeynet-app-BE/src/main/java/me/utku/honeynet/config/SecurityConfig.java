@@ -70,6 +70,7 @@ public class SecurityConfig {
     @Bean
     public SwitchUserFilter switchUserFilter() {
         SwitchUserFilter filter = new SwitchUserFilter();
+        filter.setUsernameParameter("email");
         filter.setUserDetailsService(userService);
         filter.setSuccessHandler(jsonAuthSuccessHandler());
         filter.setFailureHandler(jsonAuthFailureHandler());
@@ -89,7 +90,8 @@ public class SecurityConfig {
                 .requestMatchers("/firm/**").hasAuthority(UserRole.SUPER_ADMIN.toString())
                 .requestMatchers("/pot/**").hasAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/user/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())
-                .requestMatchers("/suspicious/client/**").hasAnyAuthority(UserRole.ADMIN.toString())
+                .requestMatchers("/server-info/**").hasAuthority(UserRole.ADMIN.toString())
+                .requestMatchers("/suspicious/client/**").hasAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/suspicious/server/**").permitAll()
                 .requestMatchers("/**").denyAll()
             )

@@ -64,8 +64,6 @@ public class UserService implements UserDetailsService {
     try {
       newUser.setId(UUID.randomUUID().toString());
       newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
-      boolean isUsernameTaken = userRepository.existsByUsername(newUser.getUsername());
-      if (isUsernameTaken) throw new Exception("Username is already taken!");
       user = userRepository.save(newUser);
     } catch (Exception exception) {
       log.error("User service create exception: {}", exception.getMessage());
@@ -98,8 +96,8 @@ public class UserService implements UserDetailsService {
   }
 
   @Override
-  public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    User user = userRepository.findByUsername(username);
+  public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    User user = userRepository.findByEmail(email);
     if (user == null) {
       throw new UsernameNotFoundException("Could not find user");
     }
@@ -107,6 +105,7 @@ public class UserService implements UserDetailsService {
         user.getId(),
         user.getUsername(),
         user.getPassword(),
+        user.getEmail(),
         user.getFirmRef(),
         AuthorityUtils.createAuthorityList(user.getRole().name())
     );

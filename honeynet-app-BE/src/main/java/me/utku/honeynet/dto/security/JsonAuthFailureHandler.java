@@ -25,7 +25,7 @@ public class JsonAuthFailureHandler implements AuthenticationFailureHandler {
     // Customize the JSON response
     Map<String, Object> jsonResponse = new HashMap<>();
     jsonResponse.put("statusCode", HttpServletResponse.SC_UNAUTHORIZED);
-    jsonResponse.put("data", null);
+    jsonResponse.put("data", "Authentication failed");
 
     // Write the JSON response to the response body
     objectMapper.writeValue(response.getWriter(), jsonResponse);

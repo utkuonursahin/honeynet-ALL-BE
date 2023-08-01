@@ -61,7 +61,7 @@ public class EmailListenerService extends MessageCountAdapter {
             emailListener.setEmail(emailSetupRequest.getEmail());
             emailListener.setPassword(KeyService.encrypt(emailSetupRequest.getPassword()));
             emailListener.setStatus(EmailListenerStatus.LISTEN);
-            emailListener.setFirmId(firmId);
+            emailListener.setFirmRef(firmId);
             if(emailListenerRepository.existsByEmail(emailListener.getEmail())){
                 return emailListenerRepository.findByEmail(emailListener.getEmail());
             }
@@ -73,7 +73,7 @@ public class EmailListenerService extends MessageCountAdapter {
 
     @Scheduled(fixedRate = 1000 * 10 * 10)
     public void checkEmails() {
-        for (EmailListener emailListener : emailListenerRepository.findAllByFirmId(firmId)) {
+        for (EmailListener emailListener : emailListenerRepository.findAllByFirmRef(firmId)) {
             System.out.println("Email listener: " + emailListener);
             if (emailListener != null && emailListener.getStatus().equals(EmailListenerStatus.LISTEN)) {
                 try {
