@@ -34,6 +34,24 @@ public class ServerInfoController {
         return GenericResponse.<ServerInfo>builder().data(savedServerInfo).statusCode(200).build();
     }
 
+    @PostMapping("/setup")
+    public GenericResponse<ServerInfo> setupServer(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam String potId){
+        ServerInfo serverInfo = serverInfoService.setup(potId, userDetails.getFirmRef());
+        return GenericResponse.<ServerInfo>builder().data(serverInfo).statusCode(200).build();
+    }
+
+    @PostMapping("/shutdown")
+    public GenericResponse<ServerInfo> shutdownServer(@RequestParam String id){
+        ServerInfo serverInfo = serverInfoService.shutdown(id);
+        return GenericResponse.<ServerInfo>builder().data(serverInfo).statusCode(200).build();
+    }
+
+    @PostMapping("/start")
+    public GenericResponse<ServerInfo> startServer(@RequestParam String id){
+        ServerInfo serverInfo = serverInfoService.start(id);
+        return GenericResponse.<ServerInfo>builder().data(serverInfo).statusCode(200).build();
+    }
+
     @DeleteMapping
     public GenericResponse<String> deleteServerInfo(@RequestParam String id){
         serverInfoService.delete(id);

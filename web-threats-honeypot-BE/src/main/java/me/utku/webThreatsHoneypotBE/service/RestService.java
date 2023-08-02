@@ -49,7 +49,7 @@ public class RestService {
         payload.put("password", bruteForceRequest.getPayloadPassword());
 
         Map<String,Object> map = new HashMap<>();
-        map.put("firm",firmId);
+        map.put("firmRef",firmId);
         map.put("origin", bruteForceRequest.getOrigin());
         map.put("category", "BRUTE_FORCE");
         map.put("potName","Web Threats Pot");
@@ -65,7 +65,7 @@ public class RestService {
         Map<String,Object> map = new HashMap<>();
         map.put("origin", pathTraversalRequest.getOrigin());
         map.put("category", "PATH_TRAVERSAL");
-        map.put("firm",firmId);
+        map.put("firmRef",firmId);
         map.put("payload", payload);
         map.put("date", LocalDateTime.now());
         return map;

@@ -2,10 +2,7 @@ package me.utku.honeynet.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.utku.honeynet.dto.security.CustomUserDetails;
-import me.utku.honeynet.model.Firm;
 import me.utku.honeynet.model.Pot;
-import me.utku.honeynet.model.ServerInfo;
 import me.utku.honeynet.repository.PotRepository;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +17,6 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class PotService {
-    private final ServerInfoService serverInfoService;
-    private final FirmService firmService;
     private final PotRepository potRepository;
 
     public List<Pot> getAll() {
@@ -93,34 +88,5 @@ public class PotService {
             log.error("Pot service delete exception: {}",exception.getMessage());
         }
         return isDeleted;
-    }
-
-    public String sanitize(String input){
-        String output = input.replaceAll("[|&]", "");
-        if(!output.equals(input)){
-            log.warn("Pot service sanitize warning: {} -> {}",input,output);
-        }
-        return output;
-    }
-
-    public ServerInfo setup(String potId, String firmId){
-        ServerInfo serverInfo = new ServerInfo();
-        try {
-            Pot pot = potRepository.findById(potId).orElse(null);
-            if(pot == null) throw new Exception("No pot/firm found with given id");
-            serverInfo = serverInfoService.create(potId,firmId);
-            Runtime.getRuntime()
-                .exec("cmd /c cd "
-                    + sanitize(pot.getServerPath())
-                    + " & start java -jar "
-                    + sanitize(pot.getServerFileName())
-                    + " --be.id="+sanitize(serverInfo.getId())
-                    + " --be.firmId="+sanitize(serverInfo.getFirmRef())
-                    + " --server.port="+sanitize(serverInfo.getPort())
-                );
-        }catch (Exception error){
-            log.error("Pot service setup exception: {}",error.getMessage());
-        }
-        return serverInfo;
     }
 }

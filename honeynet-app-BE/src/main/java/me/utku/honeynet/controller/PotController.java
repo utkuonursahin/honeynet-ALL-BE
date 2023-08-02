@@ -53,13 +53,6 @@ public class PotController {
         return GenericResponse.<Pot>builder().data(pot).build();
     }
 
-    @PostMapping("/setup")
-    public GenericResponse<ServerInfo> setupPot(@AuthenticationPrincipal CustomUserDetails userDetails, @RequestParam String potId) {
-        ServerInfo result = potService.setup(potId, userDetails.getFirmRef());
-        return GenericResponse.<ServerInfo>builder().data(result).build();
-    }
-
-
     @PostMapping("/phishing-email")
     public GenericResponse<EmailListener> createEmailListener(
         @RequestParam String potId,

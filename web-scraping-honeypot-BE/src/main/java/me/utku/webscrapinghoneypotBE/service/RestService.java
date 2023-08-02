@@ -46,7 +46,7 @@ public class RestService {
         payload.put("targetElementId", scrawlAttempt.getTargetElementId());
 
         Map<String,Object> map = new HashMap<>();
-        map.put("firm",firmId);
+        map.put("firmRef",firmId);
         map.put("origin", scrawlAttempt.getOrigin());
         map.put("payload", payload);
         map.put("category", "WEB_SCRAPING");

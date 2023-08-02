@@ -11,7 +11,7 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/email-listener")
+@RequestMapping("/")
 @RequiredArgsConstructor
 
 public class EmailListenerController {

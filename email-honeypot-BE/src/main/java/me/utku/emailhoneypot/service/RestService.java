@@ -48,7 +48,7 @@ public class RestService {
         payload.put("subject", emailContent.getSubject());
 
         Map<String,Object> map = new HashMap<>();
-        map.put("firm", firmId);
+        map.put("firmRef", firmId);
         map.put("origin", emailContent.getOrigin());
         map.put("payload", payload);
         map.put("category", "EMAIL");

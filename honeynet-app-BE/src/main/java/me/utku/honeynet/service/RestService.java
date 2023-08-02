@@ -48,9 +48,9 @@ public class RestService {
         return map;
     }
 
-    public String findEmailListenerServerUrl(String potId,String firmId){
+    public String findServerUrl(String potId,String firmId){
         ServerInfo serverInfo = serverInfoService.getByPotIdAndFirmId(potId,firmId);
-        return "http://localhost:"+serverInfo.getPort()+"/email-listener";
+        return "http://localhost:"+serverInfo.getPort();
     }
 
     public List<EmailListener> getEmailListeners(String url, HttpHeaders headers){
@@ -78,7 +78,7 @@ public class RestService {
         List<EmailListener> emailListeners = new ArrayList<>();
         try{
             HttpHeaders headers = generateHeaders();
-            emailListeners = getEmailListeners(findEmailListenerServerUrl(potId,firmId),headers);
+            emailListeners = getEmailListeners(findServerUrl(potId,firmId),headers);
         } catch (Exception error){
             log.error("Error while forwarding get all email listeners request: {}", error.getMessage());
         }
@@ -89,7 +89,7 @@ public class RestService {
         try{
             HttpHeaders headers = generateHeaders();
             Map<String, Object> body = generateBody(emailSetupRequest);
-            return postEmailListener(findEmailListenerServerUrl(potId,firmId),body,headers);
+            return postEmailListener(findServerUrl(potId,firmId),body,headers);
         } catch (Exception error){
             log.error("Error while forwarding email listener setup request: {}", error.getMessage());
             return null;
@@ -101,7 +101,7 @@ public class RestService {
             HttpHeaders headers = generateHeaders();
             Map<String,Object> body = new HashMap<>();
             body.put("status", updatePart.getStatus());
-            return putEmailListener(id,findEmailListenerServerUrl(potId,firmId),body,headers);
+            return putEmailListener(id,findServerUrl(potId,firmId),body,headers);
         } catch (Exception error){
             log.error("Error while forwarding email listener update request: {}", error.getMessage());
             return null;
@@ -111,10 +111,21 @@ public class RestService {
     public Boolean forwardDeleteEmailListener(String id,String potId, String firmId){
         try{
             HttpHeaders headers = generateHeaders();
-            return deleteEmailListener(id,findEmailListenerServerUrl(potId,firmId),headers);
+            return deleteEmailListener(id,findServerUrl(potId,firmId),headers);
         } catch (Exception error){
             log.error("Error while forwarding delete all email listeners request: {}", error.getMessage());
             return false;
         }
+    }
+
+    public void shutdownTargetServer(ServerInfo serverInfo){
+        try{
+            HttpHeaders headers = generateHeaders();
+            HttpEntity<String> request = new HttpEntity<>(headers);
+            this.restTemplate.exchange("http://localhost:"+serverInfo.getPort()+"/shutdown", HttpMethod.POST, request, Void.class);
+        } catch (Exception error){
+            log.error("Error while shutting down target server: {}", error.getMessage());
+        }
+
     }
 }
