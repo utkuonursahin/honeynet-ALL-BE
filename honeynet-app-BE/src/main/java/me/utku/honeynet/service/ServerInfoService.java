@@ -1,6 +1,5 @@
 package me.utku.honeynet.service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.honeynet.enums.ServerInfoStatus;
@@ -107,7 +106,7 @@ public class ServerInfoService {
         try{
             serverInfo = serverInfoRepository.findByPotRefAndFirmRef(potId,firmId);
             if(serverInfo != null){
-                serverInfo.setStatus(ServerInfoStatus.ACTIVE);
+                serverInfo.setStatus(ServerInfoStatus.RUN);
                 serverInfo = serverInfoRepository.save(serverInfo);
                 return serverInfo;
             }
@@ -122,7 +121,7 @@ public class ServerInfoService {
                     .setHost(ia.getHostAddress())
                     .setPort(Integer.toString(findAvailablePort()))
                     .setUrl("http://"+ia.getHostAddress()+":"+serverInfo.getPort())
-                    .setStatus(ServerInfoStatus.ACTIVE);
+                    .setStatus(ServerInfoStatus.RUN);
                 serverInfo = serverInfoRepository.save(serverInfo);
             }
         }catch(Exception exception){
@@ -155,7 +154,7 @@ public class ServerInfoService {
         ServerInfo serverInfo = null;
         try{
             serverInfo = serverInfoRepository.findById(id).orElseThrow();
-            serverInfo.setStatus(ServerInfoStatus.INACTIVE);
+            serverInfo.setStatus(ServerInfoStatus.SHUTDOWN);
             serverInfo = serverInfoRepository.save(serverInfo);
             restService.shutdownTargetServer(serverInfo);
         } catch (Exception exception){
@@ -170,11 +169,21 @@ public class ServerInfoService {
             serverInfo = serverInfoRepository.findById(id).orElse(null);
             assert serverInfo != null;
             serverInfo = setup(serverInfo.getPotRef(),serverInfo.getFirmRef());
-            serverInfo.setStatus(ServerInfoStatus.ACTIVE);
+            serverInfo.setStatus(ServerInfoStatus.RUN);
             serverInfo = serverInfoRepository.save(serverInfo);
         } catch (Exception error){
             log.error("ServerInfo service start exception: {}",error.getMessage());
         }
         return serverInfo;
+    }
+
+    public void terminate(String id){
+        try{
+            ServerInfo serverInfo = serverInfoRepository.findById(id).orElseThrow();
+            restService.shutdownTargetServer(serverInfo);
+            serverInfoRepository.deleteById(id);
+        } catch (Exception exception){
+            log.error("ServerInfo service terminate exception: {}",exception.getMessage());
+        }
     }
 }

@@ -58,4 +58,10 @@ public class ServerInfoController {
         return GenericResponse.<String>builder().data("ServerInfo deleted successfully").statusCode(200).build();
     }
 
+    @DeleteMapping("/terminate")
+    public GenericResponse<String> terminateServer(@RequestParam String id){
+        serverInfoService.terminate(id);
+        return GenericResponse.<String>builder().data("Server terminated successfully").statusCode(200).build();
+    }
+
 }
