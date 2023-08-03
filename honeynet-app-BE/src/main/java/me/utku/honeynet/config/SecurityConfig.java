@@ -88,6 +88,7 @@ public class SecurityConfig {
                 .requestMatchers("/logout/impersonate").hasAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/firm/image/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())
                 .requestMatchers("/firm/**").hasAuthority(UserRole.SUPER_ADMIN.toString())
+                .requestMatchers("/chart/**").hasAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/pot/**").hasAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/user/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())
                 .requestMatchers("/server-info/**").hasAuthority(UserRole.ADMIN.toString())

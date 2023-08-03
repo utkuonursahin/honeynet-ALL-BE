@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.*;
 public class SuspiciousActivityClientController {
     private final SuspiciousActivityService suspiciousActivityService;
 
-    @GetMapping
+    /*@GetMapping
     public GenericResponse<PaginatedSuspiciousActivities> getActivities(@RequestParam(defaultValue = "0") int page,
                                                                         @RequestParam(defaultValue = "20") int size) {
         PaginatedSuspiciousActivities activities = suspiciousActivityService.getAllActivities(page, size);
         return GenericResponse.<PaginatedSuspiciousActivities>builder().data(activities).statusCode(200).build();
-    }
+    }*/
 
     @GetMapping("/{id}")
     public GenericResponse<SuspiciousActivity> getActivity(@PathVariable String id) {

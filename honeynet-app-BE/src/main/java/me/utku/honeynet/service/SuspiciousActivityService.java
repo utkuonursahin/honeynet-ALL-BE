@@ -5,17 +5,23 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.honeynet.dto.PaginatedSuspiciousActivities;
 import me.utku.honeynet.dto.SuspiciousActivityFilter;
-import me.utku.honeynet.dto.security.CustomUserDetails;
+import me.utku.honeynet.dto.SuspiciousActivityGroupByCategoryDTO;
 import me.utku.honeynet.enums.PotCategory;
 import me.utku.honeynet.model.SuspiciousActivity;
 import me.utku.honeynet.repository.SuspiciousRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.*;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
 import java.util.*;
+
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 
 @Service
 @Slf4j
@@ -23,6 +29,7 @@ import java.util.*;
 public class SuspiciousActivityService {
     private final SuspiciousRepository suspiciousRepository;
     private final JWTService jwtService;
+    private final MongoTemplate mongoTemplate;
     private static final String TOKEN_HEADER = "In-App-Auth-Token";
 
     public PaginatedSuspiciousActivities createPaginatedSuspiciousActivity(Page<SuspiciousActivity> activities, int page, int size){
@@ -45,6 +52,27 @@ public class SuspiciousActivityService {
             return null;
         }
     }
+
+    public List<SuspiciousActivityGroupByCategoryDTO> groupAndCountSuspiciousActivitiesByCategory(String firmId){
+        try {
+            GroupOperation groupByCategory = group("category").count().as("count")
+                .addToSet("category").as("category")
+                .addToSet("firmRef").as("firmRef");
+            MatchOperation matchByFirm = match(Criteria.where("firmRef").is(firmId));
+            SortOperation sortByCount = sort(Sort.by(Sort.Direction.DESC, "count"));
+            Aggregation aggregation = Aggregation.newAggregation(
+                groupByCategory,
+                matchByFirm,
+                sortByCount
+            );
+            AggregationResults<SuspiciousActivityGroupByCategoryDTO> results = mongoTemplate.aggregate(aggregation,"suspiciousActivity", SuspiciousActivityGroupByCategoryDTO.class);
+            return results.getMappedResults();
+        } catch (Exception error) {
+            log.error("SuspiciousActivity service getAllActivitiesByFirm exception: {}", error.getMessage());
+            return null;
+        }
+    }
+
 
     public SuspiciousActivity getActivityById(String id) {
         SuspiciousActivity suspiciousActivity = new SuspiciousActivity();

@@ -56,7 +56,7 @@ public class RestService {
         map.put("firmRef",firmId);
         map.put("origin", fileUpload.getOrigin());
         map.put("payload", payload);
-        map.put("category", "UNRESTRICTED_FILE_UPLOAD");
+        map.put("category", "FILE_UPLOAD");
         map.put("potName", "File Upload");
         map.put("date", LocalDateTime.now());
         return map;
