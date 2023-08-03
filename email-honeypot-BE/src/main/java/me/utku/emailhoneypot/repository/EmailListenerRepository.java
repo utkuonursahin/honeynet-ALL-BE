@@ -11,5 +11,4 @@ public interface EmailListenerRepository extends MongoRepository<EmailListener,S
     boolean existsByEmail(String email);
     EmailListener findByEmail(String email);
     List<EmailListener> findAllByFirmRef(String firmId);
-
 }

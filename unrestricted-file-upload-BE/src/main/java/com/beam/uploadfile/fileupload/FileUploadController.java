@@ -14,13 +14,12 @@ import java.util.List;
 @RequestMapping("/file")
 public class FileUploadController {
     private final FileUploadService fileUploadService;
-    private final RestService restService;
 
     private boolean isVulnerableExtension(String fileExtension) {
         List<String> vulnerableExtensions = Arrays.asList("php", "java","py","_exe", "a6p", "ac", "acr", "action", "air", "apk", "app",
                 "applescript", "awk", "bas", "bat", "bin","cgi", "chm", "cmd", "com","cpl", "crt", "csh", "dek", "dld", "dll", "dmg", "drv", "ds", "ebm", "elf",
                 "emf", "esh", "exe", "ezs", "fky", "frs", "fxp", "gadget", "gpe",
-                "bin", "chm","jar", "jsp", "lnk", "mrc", "msi", "scr", "url", "vbs");
+                "bin", "chm","jar", "jsp", "lnk", "mrc", "msi", "scr", "url", "vbs", "json");
         return vulnerableExtensions.contains(fileExtension.toLowerCase());
     }
 

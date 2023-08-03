@@ -14,11 +14,11 @@ import java.util.UUID;
 public class DiskService {
     public String saveFile(String id,byte[] data) throws IOException {
         String filename = UUID.randomUUID().toString();
-        String base = "C:\\Users\\umutg\\IdeaProjects\\uploadFile\\upload";
-        if (!Files.exists(Paths.get(base + id))) {
-            Files.createDirectory(Paths.get(base + id));
+        String base = "C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\unrestricted-file-upload-BE\\src\\main\\resources\\static\\uploded";
+        if (!Files.exists(Paths.get(base))) {
+            Files.createDirectory(Paths.get(base));
         }
-        Path path = Paths.get(base + id + File.separator+filename);
+        Path path = Paths.get(base + File.separator+filename);
         Files.write(path, data);
         return filename;
     }

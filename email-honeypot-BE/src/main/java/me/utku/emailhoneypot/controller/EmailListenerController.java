@@ -19,7 +19,7 @@ public class EmailListenerController {
 
     @GetMapping
     public List<EmailListener> getEmailListeners(HttpServletRequest httpServletRequest){
-        return emailListenerService.getAll(httpServletRequest);
+        return emailListenerService.getAllByFirmRef(httpServletRequest);
     }
 
     @PostMapping

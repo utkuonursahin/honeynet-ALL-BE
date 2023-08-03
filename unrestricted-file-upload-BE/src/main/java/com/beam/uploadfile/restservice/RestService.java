@@ -5,6 +5,7 @@ import com.beam.uploadfile.jwtservice.JWTService;
 import com.beam.uploadfile.fileupload.FileUpload;
 import com.beam.uploadfile.suspiciousactivity.SuspiciousActivity;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -44,15 +45,18 @@ public class RestService {
         }
     }
 
+    @Value("${be.firmId}")
+    private String firmId;
+
     public Map<String, Object> generateBody(FileUpload fileUpload) {
         Map<String, Object> payload = new HashMap<>();
         payload.put("filename", fileUpload.getFileNameOriginal());
 
         Map<String, Object> map = new HashMap<>();
-        map.put("firm",firmId);
+        map.put("firmRef",firmId);
         map.put("origin", fileUpload.getOrigin());
         map.put("payload", payload);
-        map.put("category", "Unrestricted File Upload");
+        map.put("category", "UNRESTRICTED_FILE_UPLOAD");
         map.put("potName", "File Upload");
         map.put("date", LocalDateTime.now());
         return map;

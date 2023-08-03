@@ -29,14 +29,20 @@ public class EmailListenerService extends MessageCountAdapter {
     private final JWTService jwtService;
     private final EmailListenerRepository emailListenerRepository;
 
-    public List<EmailListener> getAll(HttpServletRequest httpServletRequest) {
+    @Value("${be.firmId}")
+    private String firmId;
+
+    public List<EmailListener> getAllByFirmRef(HttpServletRequest httpServletRequest) {
         List<EmailListener> emailListeners = new ArrayList<>();
         String authToken = httpServletRequest.getHeader("In-App-Auth-Token");
         try {
             if (authToken != null && jwtService.validateJWT(authToken)) {
-                emailListeners = emailListenerRepository.findAll();
+                emailListeners = emailListenerRepository.findAllByFirmRef(firmId);
+                emailListeners.stream().forEach(emailListener -> emailListener
+                    .setPassword(null)
+                    .setFirmRef(null)
+                );
             }
-            emailListeners = emailListenerRepository.findAll();
         } catch (Exception error) {
             log.error("EmailListener service get all exception: {}", error.getMessage());
         }
@@ -52,8 +58,6 @@ public class EmailListenerService extends MessageCountAdapter {
         }
     }
 
-    @Value("${be.firmId}")
-    private String firmId;
     public EmailListener create(EmailSetupRequest emailSetupRequest, HttpServletRequest httpServletRequest) {
         EmailListener emailListener = new EmailListener();
         String authToken = httpServletRequest.getHeader("In-App-Auth-Token");
