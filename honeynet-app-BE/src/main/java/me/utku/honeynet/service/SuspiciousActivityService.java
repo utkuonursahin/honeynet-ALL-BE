@@ -1,5 +1,6 @@
 package me.utku.honeynet.service;
 
+import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
@@ -31,6 +34,9 @@ public class SuspiciousActivityService {
     private final JWTService jwtService;
     private final MongoTemplate mongoTemplate;
     private static final String TOKEN_HEADER = "In-App-Auth-Token";
+    private final JavaMailSender mailSender;
+    private final FirmService firmService;
+
 
     public PaginatedSuspiciousActivities createPaginatedSuspiciousActivity(Page<SuspiciousActivity> activities, int page, int size){
         PaginatedSuspiciousActivities paginatedSuspiciousActivities = new PaginatedSuspiciousActivities();
@@ -111,6 +117,27 @@ public class SuspiciousActivityService {
             return null;
         }
     }
+    public void sendEmail(String to, String subject, PotCategory potCategory,String potName,Object payload, Date currentDate) {
+
+        try{
+            String contentHtml =
+                    "<div style=\"background-color: #F49C14; color: white;font-size: 30px;\"><h1>Suspicious Activity Alert</h1></div>" +
+                            "<div style='font:italic;font-size:larger'><p>"+to+", \nWe've <span>detected</span> some suspicious activites as"+potCategory+ "in"+potName+"</p></div>"+
+                            "\n<h3>Please take a look !</h3>"+potCategory+
+                            "<div style='color:red'>Date : "+currentDate+"</div>"+
+                            "Payload : "+payload;
+
+            MimeMessage message = mailSender.createMimeMessage();
+            message.setFrom("fakemployeebeam@gmail.com");
+            message.setRecipients(MimeMessage.RecipientType.TO,to);
+            message.setSubject(subject);
+            message.setContent(contentHtml,"text/html;charset=utf-8");
+            message.setSentDate(new Date());
+            mailSender.send(message);
+        }catch (Exception exception){
+            log.error("EmailSenderService sendEmail exception {}", exception.getMessage());
+        }
+    }
 
     public SuspiciousActivity createActivity(SuspiciousActivity newSuspiciousActivity, HttpServletRequest httpServletRequest) {
         SuspiciousActivity suspiciousActivity = new SuspiciousActivity();
@@ -118,6 +145,11 @@ public class SuspiciousActivityService {
             String authToken = httpServletRequest.getHeader(TOKEN_HEADER);
             if(authToken != null && jwtService.validateJWT(authToken)){
                 newSuspiciousActivity.setId(UUID.randomUUID().toString());
+                firmService.get(newSuspiciousActivity.getFirmRef()).getAlertReceivers().forEach(receiver->{
+                    sendEmail(receiver,"Alert",newSuspiciousActivity.getCategory(),
+                            newSuspiciousActivity.getPotName(), newSuspiciousActivity.getPayload(), new Date()
+                    );
+                });
                 suspiciousActivity = suspiciousRepository.save(newSuspiciousActivity);
             }
         } catch (Exception error) {
