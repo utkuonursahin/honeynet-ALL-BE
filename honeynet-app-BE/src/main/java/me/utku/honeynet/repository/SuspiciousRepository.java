@@ -13,6 +13,9 @@ import java.util.List;
 
 public interface SuspiciousRepository extends MongoRepository<SuspiciousActivity,String> {
     @Query
-    Page<SuspiciousActivity> findAllByFirmRefAndOriginContainsAndCategoryInAndDateBetween(String firmId, String originFilter, List<PotCategory> categoryFilters,
-                                                                                LocalDateTime start, LocalDateTime end, Pageable pageable);
+    Page<SuspiciousActivity> findAllByFirmRefAndOriginContainsAndCategoryInAndDateBetween(String firmId,
+                                                                                          String originFilter,
+                                                                                          List<PotCategory> categoryFilters,
+                                                                                          LocalDateTime start,
+                                                                                          LocalDateTime end, Pageable pageable);
 }

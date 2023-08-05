@@ -36,6 +36,12 @@
 			<version>0.7.12</version>
 		</dependency>
 		<dependency>
+			<groupId>io.ipinfo</groupId>
+			<artifactId>ipinfo-spring</artifactId>
+			<version>0.2.0</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>

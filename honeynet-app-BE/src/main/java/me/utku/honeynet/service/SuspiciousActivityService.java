@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.utku.honeynet.dto.PaginatedSuspiciousActivities;
 import me.utku.honeynet.dto.SuspiciousActivityFilter;
 import me.utku.honeynet.dto.SuspiciousActivityGroupByCategoryDTO;
+import me.utku.honeynet.dto.SuspiciousActivityGroupByOriginDTO;
 import me.utku.honeynet.enums.PotCategory;
 import me.utku.honeynet.model.SuspiciousActivity;
 import me.utku.honeynet.repository.SuspiciousRepository;
@@ -19,6 +20,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
@@ -35,44 +37,67 @@ public class SuspiciousActivityService {
     public PaginatedSuspiciousActivities createPaginatedSuspiciousActivity(Page<SuspiciousActivity> activities, int page, int size){
         PaginatedSuspiciousActivities paginatedSuspiciousActivities = new PaginatedSuspiciousActivities();
         paginatedSuspiciousActivities.setActivityList(activities.getContent());
-        paginatedSuspiciousActivities.setCurrentPage(Long.valueOf(page));
-        paginatedSuspiciousActivities.setCurrentSize(Long.valueOf(size));
-        paginatedSuspiciousActivities.setTotalPage(Long.valueOf(activities.getTotalPages()));
-        paginatedSuspiciousActivities.setTotalSize(Long.valueOf(activities.getTotalElements()));
+        paginatedSuspiciousActivities.setCurrentPage((long) page);
+        paginatedSuspiciousActivities.setCurrentSize((long) size);
+        paginatedSuspiciousActivities.setTotalPage((long) activities.getTotalPages());
+        paginatedSuspiciousActivities.setTotalSize(activities.getTotalElements());
         return paginatedSuspiciousActivities;
     }
 
-    public PaginatedSuspiciousActivities getAllActivities(int page, int size) {
-        try {
-            Pageable pageable = PageRequest.of(page,size);
-            Page<SuspiciousActivity> activities = suspiciousRepository.findAll(pageable);
-            return createPaginatedSuspiciousActivity(activities,page,size);
-        } catch (Exception error) {
-            log.error("SuspiciousActivity service getAllActivities exception: {}", error.getMessage());
+    public Date calculateSince(String dateInput){
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("uuuu-MM-dd'T'HH:mm:ss.SSSxxx");
+        String dateFilter;
+        if(dateInput.equals("24h")){
+            dateFilter = OffsetDateTime.now(ZoneOffset.UTC).minusHours(24).format(formatter);
+        } else if(dateInput.equals("1w")){
+            dateFilter = OffsetDateTime.now(ZoneOffset.UTC).minusDays(7).format(formatter);
+        } else if(dateInput.equals("2w")){
+            dateFilter = OffsetDateTime.now(ZoneOffset.UTC).minusDays(14).format(formatter);
+        } else if (dateInput.equals("1m")){
+            dateFilter = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(1).format(formatter);
+        } else if (dateInput.equals("3m")){
+            dateFilter = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(3).format(formatter);
+        } else if (dateInput.equals("6m")){
+            dateFilter = OffsetDateTime.now(ZoneOffset.UTC).minusMonths(6).format(formatter);
+        } else {
+            dateFilter = OffsetDateTime.of(2023, 05,01,00,00,00,00,ZoneOffset.UTC).format(formatter);
+        }
+        return Date.from(Instant.from(formatter.parse(dateFilter)));
+    }
+
+    public Aggregation groupAggregation(String groupBy, String since){
+        try{
+            GroupOperation groupOperation = group(groupBy,"firmRef").count().as("count").addToSet(groupBy).as(groupBy);
+            MatchOperation matchOperation = match(Criteria.where("date").gte(calculateSince(since)));
+            SortOperation sortByCount = sort(Sort.by(Sort.Direction.DESC, "count"));
+            return Aggregation.newAggregation(matchOperation, groupOperation, sortByCount);
+        }catch (Exception error) {
+            log.error("SuspiciousActivity service groupAggregation exception: {}", error.getMessage());
             return null;
         }
     }
 
-    public List<SuspiciousActivityGroupByCategoryDTO> groupAndCountSuspiciousActivitiesByCategory(String firmId){
+    public List<SuspiciousActivityGroupByCategoryDTO> groupAndCountSuspiciousActivitiesByCategory(String since){
         try {
-            GroupOperation groupByCategory = group("category").count().as("count")
-                .addToSet("category").as("category")
-                .addToSet("firmRef").as("firmRef");
-            MatchOperation matchByFirm = match(Criteria.where("firmRef").is(firmId));
-            SortOperation sortByCount = sort(Sort.by(Sort.Direction.DESC, "count"));
-            Aggregation aggregation = Aggregation.newAggregation(
-                groupByCategory,
-                matchByFirm,
-                sortByCount
-            );
-            AggregationResults<SuspiciousActivityGroupByCategoryDTO> results = mongoTemplate.aggregate(aggregation,"suspiciousActivity", SuspiciousActivityGroupByCategoryDTO.class);
+            Aggregation aggregation = groupAggregation("category", since);
+            AggregationResults<SuspiciousActivityGroupByCategoryDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByCategoryDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
-            log.error("SuspiciousActivity service getAllActivitiesByFirm exception: {}", error.getMessage());
+            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByCategory exception: {}", error.getMessage());
             return null;
         }
     }
 
+    public List<SuspiciousActivityGroupByOriginDTO> groupAndCountSuspiciousActivitiesByOrigin(String since){
+        try {
+            Aggregation aggregation = groupAggregation("origin", since);
+            AggregationResults<SuspiciousActivityGroupByOriginDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByOriginDTO.class);
+            return results.getMappedResults();
+        } catch (Exception error) {
+            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByCategory exception: {}", error.getMessage());
+            return null;
+        }
+    }
 
     public SuspiciousActivity getActivityById(String id) {
         SuspiciousActivity suspiciousActivity = new SuspiciousActivity();
@@ -86,6 +111,9 @@ public class SuspiciousActivityService {
 
     public PaginatedSuspiciousActivities filterActivities(String firmRef, SuspiciousActivityFilter suspiciousActivityFilter, int page, int size){
         try {
+            if(suspiciousActivityFilter.getOriginFilter() == null){
+                suspiciousActivityFilter.setOriginFilter("");
+            }
             if(suspiciousActivityFilter.getDateFilters().length != 2){
                 suspiciousActivityFilter.setDateFilters(new LocalDateTime[]{
                     LocalDateTime.of(2023, Month.JULY,01,00,00),
@@ -96,8 +124,7 @@ public class SuspiciousActivityService {
                 suspiciousActivityFilter.setCategoryFilters(List.of(PotCategory.values()));
             }
             Pageable pageable = PageRequest.of(page,size);
-            Page<SuspiciousActivity> activities = null;
-            activities = suspiciousRepository.findAllByFirmRefAndOriginContainsAndCategoryInAndDateBetween(
+            Page<SuspiciousActivity> activities = suspiciousRepository.findAllByFirmRefAndOriginContainsAndCategoryInAndDateBetween(
                 firmRef,
                 suspiciousActivityFilter.getOriginFilter(),
                 suspiciousActivityFilter.getCategoryFilters(),
