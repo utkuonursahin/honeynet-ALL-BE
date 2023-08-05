@@ -65,10 +65,10 @@ public class SuspiciousActivityService {
         return Date.from(Instant.from(formatter.parse(dateFilter)));
     }
 
-    public Aggregation groupAggregation(String groupBy, String since){
+    public Aggregation groupAggregation(String groupBy, String firmRef, String since){
         try{
-            GroupOperation groupOperation = group(groupBy,"firmRef").count().as("count").addToSet(groupBy).as(groupBy);
-            MatchOperation matchOperation = match(Criteria.where("date").gte(calculateSince(since)));
+            GroupOperation groupOperation = group(groupBy).count().as("count").addToSet(groupBy).as(groupBy);
+            MatchOperation matchOperation = match(Criteria.where("date").gte(calculateSince(since)).and("firmRef").is(firmRef));
             SortOperation sortByCount = sort(Sort.by(Sort.Direction.DESC, "count"));
             return Aggregation.newAggregation(matchOperation, groupOperation, sortByCount);
         }catch (Exception error) {
@@ -77,9 +77,9 @@ public class SuspiciousActivityService {
         }
     }
 
-    public List<SuspiciousActivityGroupByCategoryDTO> groupAndCountSuspiciousActivitiesByCategory(String since){
+    public List<SuspiciousActivityGroupByCategoryDTO> groupAndCountSuspiciousActivitiesByCategory(String since,String firmRef){
         try {
-            Aggregation aggregation = groupAggregation("category", since);
+            Aggregation aggregation = groupAggregation("category", firmRef,since);
             AggregationResults<SuspiciousActivityGroupByCategoryDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByCategoryDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
@@ -88,9 +88,9 @@ public class SuspiciousActivityService {
         }
     }
 
-    public List<SuspiciousActivityGroupByOriginDTO> groupAndCountSuspiciousActivitiesByOrigin(String since){
+    public List<SuspiciousActivityGroupByOriginDTO> groupAndCountSuspiciousActivitiesByOrigin(String since,String firmRef){
         try {
-            Aggregation aggregation = groupAggregation("origin", since);
+            Aggregation aggregation = groupAggregation("origin", firmRef, since);
             AggregationResults<SuspiciousActivityGroupByOriginDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByOriginDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {

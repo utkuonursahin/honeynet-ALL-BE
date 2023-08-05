@@ -13,12 +13,12 @@ import java.util.List;
 public class ChartService {
     private final SuspiciousActivityService suspiciousActivityService;
 
-    public List<SuspiciousActivityGroupByCategoryDTO> getGroupedSuspiciousActivities(String dateAfter) {
-        return suspiciousActivityService.groupAndCountSuspiciousActivitiesByCategory(dateAfter);
+    public List<SuspiciousActivityGroupByCategoryDTO> getGroupedSuspiciousActivitiesByCategory(String since, String firmRef) {
+        return suspiciousActivityService.groupAndCountSuspiciousActivitiesByCategory(since, firmRef);
     }
 
-    public List<SuspiciousActivityGroupByOriginDTO> getGroupedSuspiciousActivitiesByOrigin(String since){
-        return suspiciousActivityService.groupAndCountSuspiciousActivitiesByOrigin(since);
+    public List<SuspiciousActivityGroupByOriginDTO> getGroupedSuspiciousActivitiesByOrigin(String since, String firmRef){
+        return suspiciousActivityService.groupAndCountSuspiciousActivitiesByOrigin(since, firmRef);
     }
 
 }
