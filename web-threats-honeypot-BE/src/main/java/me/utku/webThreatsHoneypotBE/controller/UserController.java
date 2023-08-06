@@ -1,9 +1,10 @@
 package me.utku.webThreatsHoneypotBE.controller;
 
-import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import me.utku.webThreatsHoneypotBE.dto.Folder;
 import me.utku.webThreatsHoneypotBE.dto.GenericResponse;
+import me.utku.webThreatsHoneypotBE.dto.Origin;
 import me.utku.webThreatsHoneypotBE.dto.PathTraversalRequest;
 import me.utku.webThreatsHoneypotBE.model.User;
 import me.utku.webThreatsHoneypotBE.service.PathTraversalRequestService;
@@ -24,7 +25,7 @@ public class UserController {
     private final RestService restService;
 
     @GetMapping(path="/image/{id}")
-    public ResponseEntity getUserImage(@PathVariable String id, ServletRequest servletRequest) {
+    public ResponseEntity getUserImage(@PathVariable String id, HttpServletRequest httpServletRequest) {
         boolean secureVariable = !id.contains("%F") && !id.contains("..") && !id.contains("%C");
         MediaType contentType = secureVariable ? MediaType.IMAGE_JPEG : MediaType.TEXT_PLAIN;
         if(secureVariable){
@@ -34,7 +35,8 @@ public class UserController {
         } else {
             Folder rootLinux = pathTraversalRequestService.generateFakeFolderStructure();
             if(id.contains("..%F..%F..%F..%F") || id.contains("..%F..%F..%F..")){
-                PathTraversalRequest pathTraversalRequest = new PathTraversalRequest(servletRequest.getRemoteAddr(), id);
+                PathTraversalRequest pathTraversalRequest = new PathTraversalRequest(
+                    new Origin(httpServletRequest.getRemoteAddr(), httpServletRequest.getLocale().getISO3Country()), id);
                 restService.postSuspiciousActivity(pathTraversalRequest);
                 return ResponseEntity.ok()
                     .contentType(contentType)

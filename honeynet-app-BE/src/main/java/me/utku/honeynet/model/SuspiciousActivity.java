@@ -2,6 +2,7 @@ package me.utku.honeynet.model;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import me.utku.honeynet.dto.Origin;
 import me.utku.honeynet.enums.PotCategory;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 public class SuspiciousActivity extends Base{
     private String firmRef;
-    private String origin;
+    private Origin origin;
     private PotCategory category;
     private String potName;
     private Object payload;

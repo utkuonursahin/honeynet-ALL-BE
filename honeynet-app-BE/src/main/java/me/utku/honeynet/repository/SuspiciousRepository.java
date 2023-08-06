@@ -11,11 +11,11 @@ import org.springframework.data.mongodb.repository.Query;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface SuspiciousRepository extends MongoRepository<SuspiciousActivity,String> {
+public interface SuspiciousRepository extends MongoRepository<SuspiciousActivity, String> {
     @Query
-    Page<SuspiciousActivity> findAllByFirmRefAndOriginContainsAndCategoryInAndDateBetween(String firmId,
-                                                                                          String originFilter,
-                                                                                          List<PotCategory> categoryFilters,
-                                                                                          LocalDateTime start,
-                                                                                          LocalDateTime end, Pageable pageable);
+    Page<SuspiciousActivity> findAllByFirmRefAndOrigin_SourceContainsAndCategoryInAndDateBetween(String firmId,
+                                                                                                 String originSource,
+                                                                                                 List<PotCategory> categoryFilters,
+                                                                                                 LocalDateTime start,
+                                                                                                 LocalDateTime end, Pageable pageable);
 }

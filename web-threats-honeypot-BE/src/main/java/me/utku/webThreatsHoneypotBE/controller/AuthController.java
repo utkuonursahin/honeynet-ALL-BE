@@ -1,6 +1,6 @@
 package me.utku.webThreatsHoneypotBE.controller;
 
-import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import me.utku.webThreatsHoneypotBE.dto.AuthResponse;
@@ -15,10 +15,9 @@ public class AuthController {
     private final BruteForceRequestService bruteForceRequestService;
 
     @PostMapping("/login")
-    public AuthResponse login(@RequestBody LoginRequest reqBody, ServletRequest servletRequest, HttpServletResponse httpServletResponse){
+    public AuthResponse login(@RequestBody LoginRequest reqBody, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse){
         String username = reqBody.getUsername();
         String password = reqBody.getPassword();
-        String reqIp = servletRequest.getRemoteAddr();
-        return bruteForceRequestService.handleBruteForceLoginAttempt(reqIp,username,password,httpServletResponse);
+        return bruteForceRequestService.handleBruteForceLoginAttempt(username,password,httpServletRequest,httpServletResponse);
     }
 }

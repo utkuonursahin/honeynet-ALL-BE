@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class SuspiciousActivityFilter {
-    private String originFilter;
+    private Origin originFilter;
     private List<PotCategory> categoryFilters;
     private LocalDateTime[] dateFilters;
     private int page;

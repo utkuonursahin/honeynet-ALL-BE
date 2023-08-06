@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.emailhoneypot.dto.EmailSetupRequest;
+import me.utku.emailhoneypot.dto.Origin;
 import me.utku.emailhoneypot.enums.EmailListenerStatus;
 import me.utku.emailhoneypot.dto.EmailContent;
 import me.utku.emailhoneypot.model.EmailListener;
@@ -97,7 +98,7 @@ public class EmailListenerService extends MessageCountAdapter {
                     Message[] messages = inbox.search(unseenFlagTerm);
                     Arrays.stream(messages).forEach(message -> {
                         try {
-                            EmailContent emailContent = new EmailContent(message.getFrom()[0].toString(), message.getSentDate(), message.getSubject());
+                            EmailContent emailContent = new EmailContent(new Origin(message.getFrom()[0].toString(),""), message.getSentDate(), message.getSubject());
                             restService.postSuspiciousActivity(emailContent);
                             message.setFlag(Flags.Flag.SEEN, true);
                         } catch (Exception e) {

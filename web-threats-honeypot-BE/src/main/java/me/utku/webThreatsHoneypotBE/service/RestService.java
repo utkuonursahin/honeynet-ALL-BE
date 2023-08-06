@@ -63,9 +63,10 @@ public class RestService {
         payload.put("path", pathTraversalRequest.getPayloadPath());
 
         Map<String,Object> map = new HashMap<>();
+        map.put("firmRef",firmId);
         map.put("origin", pathTraversalRequest.getOrigin());
         map.put("category", "PATH_TRAVERSAL");
-        map.put("firmRef",firmId);
+        map.put("potName","Web Threats Pot");
         map.put("payload", payload);
         map.put("date", LocalDateTime.now());
         return map;

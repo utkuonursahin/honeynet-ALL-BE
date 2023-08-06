@@ -3,7 +3,7 @@ package me.utku.honeynet.controller;
 import lombok.RequiredArgsConstructor;
 import me.utku.honeynet.dto.GenericResponse;
 import me.utku.honeynet.dto.SuspiciousActivityGroupByCategoryDTO;
-import me.utku.honeynet.dto.SuspiciousActivityGroupByOriginDTO;
+import me.utku.honeynet.dto.SuspiciousActivityGroupByOriginSourceDTO;
 import me.utku.honeynet.dto.security.CustomUserDetails;
 import me.utku.honeynet.service.ChartService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -26,8 +26,8 @@ public class ChartController {
     }
 
     @GetMapping("/group-by-suspicious-origins")
-    public GenericResponse<List<SuspiciousActivityGroupByOriginDTO>> groupBySuspiciousOrigins(@RequestParam String since,@AuthenticationPrincipal CustomUserDetails userDetails){
-        List<SuspiciousActivityGroupByOriginDTO> result = chartService.getGroupedSuspiciousActivitiesByOrigin(since, userDetails.getFirmRef());
-        return GenericResponse.<List<SuspiciousActivityGroupByOriginDTO>>builder().data(result).statusCode(200).build();
+    public GenericResponse<List<SuspiciousActivityGroupByOriginSourceDTO>> groupBySuspiciousOrigins(@RequestParam String since, @AuthenticationPrincipal CustomUserDetails userDetails){
+        List<SuspiciousActivityGroupByOriginSourceDTO> result = chartService.getGroupedSuspiciousActivitiesByOriginSource(since, userDetails.getFirmRef());
+        return GenericResponse.<List<SuspiciousActivityGroupByOriginSourceDTO>>builder().data(result).statusCode(200).build();
     }
 }

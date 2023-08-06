@@ -1,6 +1,5 @@
 package com.beam.uploadfile.fileupload;
 
-import com.beam.uploadfile.restservice.RestService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FilenameUtils;

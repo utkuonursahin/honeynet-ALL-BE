@@ -10,7 +10,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EmailContent {
-    private String origin;
+    private Origin origin;
     private Date date;
     private String subject;
 }

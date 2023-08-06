@@ -3,10 +3,7 @@ package me.utku.honeynet.service;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import me.utku.honeynet.dto.PaginatedSuspiciousActivities;
-import me.utku.honeynet.dto.SuspiciousActivityFilter;
-import me.utku.honeynet.dto.SuspiciousActivityGroupByCategoryDTO;
-import me.utku.honeynet.dto.SuspiciousActivityGroupByOriginDTO;
+import me.utku.honeynet.dto.*;
 import me.utku.honeynet.enums.PotCategory;
 import me.utku.honeynet.model.SuspiciousActivity;
 import me.utku.honeynet.repository.SuspiciousRepository;
@@ -65,21 +62,13 @@ public class SuspiciousActivityService {
         return Date.from(Instant.from(formatter.parse(dateFilter)));
     }
 
-    public Aggregation groupAggregation(String groupBy, String firmRef, String since){
-        try{
-            GroupOperation groupOperation = group(groupBy).count().as("count").addToSet(groupBy).as(groupBy);
-            MatchOperation matchOperation = match(Criteria.where("date").gte(calculateSince(since)).and("firmRef").is(firmRef));
-            SortOperation sortByCount = sort(Sort.by(Sort.Direction.DESC, "count"));
-            return Aggregation.newAggregation(matchOperation, groupOperation, sortByCount);
-        }catch (Exception error) {
-            log.error("SuspiciousActivity service groupAggregation exception: {}", error.getMessage());
-            return null;
-        }
-    }
-
     public List<SuspiciousActivityGroupByCategoryDTO> groupAndCountSuspiciousActivitiesByCategory(String since,String firmRef){
         try {
-            Aggregation aggregation = groupAggregation("category", firmRef,since);
+            GroupOperation groupOperation = group("category").count().as("count");
+            MatchOperation matchOperation = match(Criteria.where("date").gte(calculateSince(since)).and("firmRef").is(firmRef));
+            SortOperation sortByCount = sort(Sort.by(Sort.Direction.DESC, "count"));
+            ProjectionOperation projectionOperation = project("count").and("category").previousOperation();
+            Aggregation aggregation = Aggregation.newAggregation(matchOperation, groupOperation, sortByCount, projectionOperation);
             AggregationResults<SuspiciousActivityGroupByCategoryDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByCategoryDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
@@ -88,10 +77,14 @@ public class SuspiciousActivityService {
         }
     }
 
-    public List<SuspiciousActivityGroupByOriginDTO> groupAndCountSuspiciousActivitiesByOrigin(String since,String firmRef){
+    public List<SuspiciousActivityGroupByOriginSourceDTO> groupAndCountSuspiciousActivitiesByOriginSource(String since,String firmRef){
         try {
-            Aggregation aggregation = groupAggregation("origin", firmRef, since);
-            AggregationResults<SuspiciousActivityGroupByOriginDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByOriginDTO.class);
+            GroupOperation groupOperation = group("origin.source").count().as("count");
+            MatchOperation matchOperation = match(Criteria.where("date").gte(calculateSince(since)).and("firmRef").is(firmRef));
+            SortOperation sortByCount = sort(Sort.by(Sort.Direction.DESC, "count"));
+            ProjectionOperation projectionOperation = project("count").and("source").previousOperation();
+            Aggregation aggregation = Aggregation.newAggregation(matchOperation, groupOperation, sortByCount, projectionOperation);
+            AggregationResults<SuspiciousActivityGroupByOriginSourceDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByOriginSourceDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
             log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByCategory exception: {}", error.getMessage());
@@ -112,7 +105,7 @@ public class SuspiciousActivityService {
     public PaginatedSuspiciousActivities filterActivities(String firmRef, SuspiciousActivityFilter suspiciousActivityFilter, int page, int size){
         try {
             if(suspiciousActivityFilter.getOriginFilter() == null){
-                suspiciousActivityFilter.setOriginFilter("");
+                suspiciousActivityFilter.setOriginFilter(new Origin("",""));
             }
             if(suspiciousActivityFilter.getDateFilters().length != 2){
                 suspiciousActivityFilter.setDateFilters(new LocalDateTime[]{
@@ -124,9 +117,9 @@ public class SuspiciousActivityService {
                 suspiciousActivityFilter.setCategoryFilters(List.of(PotCategory.values()));
             }
             Pageable pageable = PageRequest.of(page,size);
-            Page<SuspiciousActivity> activities = suspiciousRepository.findAllByFirmRefAndOriginContainsAndCategoryInAndDateBetween(
+            Page<SuspiciousActivity> activities = suspiciousRepository.findAllByFirmRefAndOrigin_SourceContainsAndCategoryInAndDateBetween(
                 firmRef,
-                suspiciousActivityFilter.getOriginFilter(),
+                suspiciousActivityFilter.getOriginFilter().source(),
                 suspiciousActivityFilter.getCategoryFilters(),
                 suspiciousActivityFilter.getDateFilters()[0],
                 suspiciousActivityFilter.getDateFilters()[1],

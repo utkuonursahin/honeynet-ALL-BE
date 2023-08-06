@@ -8,6 +8,6 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class ScrawlAttempt{
-    private String origin;
+    private Origin origin;
     private String targetElementId;
 }

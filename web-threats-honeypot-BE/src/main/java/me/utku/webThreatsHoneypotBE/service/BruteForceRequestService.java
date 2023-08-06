@@ -1,9 +1,11 @@
 package me.utku.webThreatsHoneypotBE.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.webThreatsHoneypotBE.dto.AuthResponse;
+import me.utku.webThreatsHoneypotBE.dto.Origin;
 import me.utku.webThreatsHoneypotBE.model.BruteForceRequest;
 import me.utku.webThreatsHoneypotBE.model.User;
 import me.utku.webThreatsHoneypotBE.repository.BruteForceRequestRepository;
@@ -44,15 +46,16 @@ public class BruteForceRequestService {
             .build();
     }
 
-    public AuthResponse handleBruteForceLoginAttempt(String reqIp, String username, String password, HttpServletResponse httpServletResponse){
+    public AuthResponse handleBruteForceLoginAttempt(String username, String password, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse){
         int max = 5;
         int min = 1;
         int randomBetweenMinMax = (int)((Math.random() * (max - min)) + min);
         ResponseCookie cookie =  this.generateCookie();
-        BruteForceRequest existReq = this.getByOrigin(reqIp);
+        Origin reqOrigin = new Origin(httpServletRequest.getRemoteAddr(), httpServletRequest.getLocale().getISO3Country());
+        BruteForceRequest existReq = getByOriginSource(reqOrigin.source());
 
         if(existReq == null){
-            this.create(new BruteForceRequest(reqIp, randomBetweenMinMax,1, null, null, null));
+            this.create(new BruteForceRequest(reqOrigin, randomBetweenMinMax,1, null, null, null));
             return fakeAuthenticationFailResponse();
         } else if(username.equals(existReq.getPayloadUsername()) && password.equals(existReq.getPayloadPassword())){
             httpServletResponse.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -68,7 +71,7 @@ public class BruteForceRequestService {
                 restService.postSuspiciousActivity(existReq);
                 return fakeAuthenticationSuccessResponse();
             } else {
-                return fakeAuthenticationFailResponse(); //return fail
+                return fakeAuthenticationFailResponse();
             }
         }
     }
@@ -93,10 +96,10 @@ public class BruteForceRequestService {
         return bruteForceRequest;
     }
 
-    public BruteForceRequest getByOrigin(String ip){
+    public BruteForceRequest getByOriginSource(String ipV4){
         BruteForceRequest bruteForceRequest = new BruteForceRequest();
         try{
-            bruteForceRequest = bruteForceRequestRepository.findByOrigin(ip);
+            bruteForceRequest = bruteForceRequestRepository.findByOriginSource(ipV4);
         }catch (Exception error){
             log.error("BruteForceRequestService get exception: {}",error.getMessage());
         }

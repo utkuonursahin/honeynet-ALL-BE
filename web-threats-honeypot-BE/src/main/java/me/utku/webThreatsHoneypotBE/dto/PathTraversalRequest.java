@@ -8,6 +8,6 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 @RequiredArgsConstructor
 public class PathTraversalRequest {
-    private String origin;
+    private Origin origin;
     private String payloadPath;
 }

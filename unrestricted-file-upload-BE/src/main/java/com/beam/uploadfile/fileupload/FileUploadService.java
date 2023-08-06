@@ -2,6 +2,7 @@ package com.beam.uploadfile.fileupload;
 
 import com.beam.uploadfile.diskservice.DiskService;
 import com.beam.uploadfile.restservice.RestService;
+import com.beam.uploadfile.suspiciousactivity.Origin;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,11 +19,10 @@ public class FileUploadService {
 
     public void saveFile(FileUpload fileUpload, MultipartFile file, HttpServletRequest httpServletRequest) throws IOException {
         String filename = diskService.saveFile(fileUpload.getId(), file.getBytes());
-        String ipAddress = httpServletRequest.getRemoteAddr();
         FileUpload upload = new FileUpload();
         upload.setFileNameOriginal(file.getOriginalFilename())
                 .setFileName(filename)
-                .setOrigin(ipAddress)
+                .setOrigin(new Origin(httpServletRequest.getRemoteAddr(), httpServletRequest.getLocale().getISO3Country()))
                 .setId(UUID.randomUUID().toString());
         restService.postSuspiciousFileActivity(upload);
         fileUploadRepository.save(upload);
