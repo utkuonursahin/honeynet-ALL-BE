@@ -2,11 +2,17 @@ package me.utku.honeynet.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.utku.honeynet.dto.chart.ServerInfoGroupByStatusDTO;
+import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginCountryDTO;
 import me.utku.honeynet.enums.ServerInfoStatus;
 import me.utku.honeynet.model.Pot;
 import me.utku.honeynet.model.ServerInfo;
 import me.utku.honeynet.repository.ServerInfoRepository;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.*;
+import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.stereotype.Service;
 
 import java.net.InetAddress;
@@ -14,10 +20,14 @@ import java.net.ServerSocket;
 import java.util.List;
 import java.util.UUID;
 
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
+import static org.springframework.data.mongodb.core.aggregation.Aggregation.project;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor_ = {@Lazy})
 public class ServerInfoService {
+    private final MongoTemplate mongoTemplate;
     private final ServerInfoRepository serverInfoRepository;
     private final PotService potService;
     @Lazy
@@ -54,6 +64,20 @@ public class ServerInfoService {
             log.error("ServerInfo service get exception: {}",exception.getMessage());
         }
         return serverInfo;
+    }
+
+    public List<ServerInfoGroupByStatusDTO> groupAndCountServerInfoByStatus(String firmRef){
+        try {
+            GroupOperation groupOperation = group("status").count().as("count");
+            MatchOperation matchOperation = match(Criteria.where("firmRef").is(firmRef));
+            ProjectionOperation projectionOperation = project("count").and("status").previousOperation();
+            Aggregation aggregation = Aggregation.newAggregation(matchOperation, groupOperation,projectionOperation);
+            AggregationResults<ServerInfoGroupByStatusDTO> results = mongoTemplate.aggregate(aggregation, "serverInfo", ServerInfoGroupByStatusDTO.class);
+            return results.getMappedResults();
+        } catch (Exception error) {
+            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByCategory exception: {}", error.getMessage());
+            return null;
+        }
     }
 
     public int findAvailablePort(){

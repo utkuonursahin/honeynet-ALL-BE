@@ -4,13 +4,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.honeynet.dto.*;
+import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByCategoryDTO;
+import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginCountryDTO;
+import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginSourceDTO;
 import me.utku.honeynet.enums.PotCategory;
 import me.utku.honeynet.model.SuspiciousActivity;
 import me.utku.honeynet.repository.SuspiciousRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -62,7 +62,7 @@ public class SuspiciousActivityService {
         return Date.from(Instant.from(formatter.parse(dateFilter)));
     }
 
-    public List<SuspiciousActivityGroupByCategoryDTO> groupAndCountSuspiciousActivitiesByCategory(String since,String firmRef){
+    public List<SuspiciousActivityGroupByCategoryDTO> groupAndCountSuspiciousActivitiesByCategory(String since, String firmRef){
         try {
             GroupOperation groupOperation = group("category").count().as("count");
             MatchOperation matchOperation = match(Criteria.where("date").gte(calculateSince(since)).and("firmRef").is(firmRef));
@@ -77,7 +77,7 @@ public class SuspiciousActivityService {
         }
     }
 
-    public List<SuspiciousActivityGroupByOriginSourceDTO> groupAndCountSuspiciousActivitiesByOriginSource(String since,String firmRef){
+    public List<SuspiciousActivityGroupByOriginSourceDTO> groupAndCountSuspiciousActivitiesByOriginSource(String since, String firmRef){
         try {
             GroupOperation groupOperation = group("origin.source").count().as("count");
             MatchOperation matchOperation = match(Criteria.where("date").gte(calculateSince(since)).and("firmRef").is(firmRef));
@@ -85,6 +85,21 @@ public class SuspiciousActivityService {
             ProjectionOperation projectionOperation = project("count").and("source").previousOperation();
             Aggregation aggregation = Aggregation.newAggregation(matchOperation, groupOperation, sortByCount, projectionOperation);
             AggregationResults<SuspiciousActivityGroupByOriginSourceDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByOriginSourceDTO.class);
+            return results.getMappedResults();
+        } catch (Exception error) {
+            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByCategory exception: {}", error.getMessage());
+            return null;
+        }
+    }
+
+    public List<SuspiciousActivityGroupByOriginCountryDTO> groupAndCountSuspiciousActivitiesByOriginCountry(String since, String firmRef){
+        try {
+            GroupOperation groupOperation = group("origin.country").count().as("count");
+            MatchOperation matchOperation = match(Criteria.where("date").gte(calculateSince(since)).and("firmRef").is(firmRef));
+            SortOperation sortByCount = sort(Sort.by(Sort.Direction.DESC, "count"));
+            ProjectionOperation projectionOperation = project("count").and("country").previousOperation();
+            Aggregation aggregation = Aggregation.newAggregation(matchOperation, groupOperation, sortByCount, projectionOperation);
+            AggregationResults<SuspiciousActivityGroupByOriginCountryDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByOriginCountryDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
             log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByCategory exception: {}", error.getMessage());
@@ -108,10 +123,12 @@ public class SuspiciousActivityService {
                 suspiciousActivityFilter.setOriginFilter(new Origin("",""));
             }
             if(suspiciousActivityFilter.getDateFilters().length != 2){
-                suspiciousActivityFilter.setDateFilters(new LocalDateTime[]{
-                    LocalDateTime.of(2023, Month.JULY,01,00,00),
-                    LocalDateTime.now()
-                });
+                suspiciousActivityFilter.setDateFilters(
+                    new Instant[]{
+                        OffsetDateTime.of(2023, 05,01,00,00,00,00,ZoneOffset.UTC).toInstant(),
+                        OffsetDateTime.now(ZoneOffset.UTC).toInstant()
+                    }
+                );
             }
             if(suspiciousActivityFilter.getCategoryFilters().isEmpty()){
                 suspiciousActivityFilter.setCategoryFilters(List.of(PotCategory.values()));
@@ -121,8 +138,7 @@ public class SuspiciousActivityService {
                 firmRef,
                 suspiciousActivityFilter.getOriginFilter().source(),
                 suspiciousActivityFilter.getCategoryFilters(),
-                suspiciousActivityFilter.getDateFilters()[0],
-                suspiciousActivityFilter.getDateFilters()[1],
+                Range.<Instant>closed(suspiciousActivityFilter.getDateFilters()[0], suspiciousActivityFilter.getDateFilters()[1]),
                 pageable
             );
             return createPaginatedSuspiciousActivity(activities,page,size);
