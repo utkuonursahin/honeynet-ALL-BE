@@ -1,5 +1,6 @@
 package me.utku.honeynet.service;
 
+import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -8,13 +9,20 @@ import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByCategoryDTO;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginCountryDTO;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginSourceDTO;
 import me.utku.honeynet.enums.PotCategory;
+import me.utku.honeynet.model.EmailInfo;
 import me.utku.honeynet.model.SuspiciousActivity;
 import me.utku.honeynet.repository.SuspiciousRepository;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -29,6 +37,12 @@ public class SuspiciousActivityService {
     private final SuspiciousRepository suspiciousRepository;
     private final JWTService jwtService;
     private final MongoTemplate mongoTemplate;
+    private final FirmService firmService;
+
+    private final EmailInfoService emailInfoService;
+    private final JavaMailSender mailSender;
+
+
     private static final String TOKEN_HEADER = "In-App-Auth-Token";
 
     public PaginatedSuspiciousActivities createPaginatedSuspiciousActivity(Page<SuspiciousActivity> activities, int page, int size){
@@ -117,6 +131,58 @@ public class SuspiciousActivityService {
         return suspiciousActivity;
     }
 
+    private static String renderThymeleafTemplate(String templateName, Map<String,Object> model){
+        TemplateEngine templateEngine = new TemplateEngine();
+        ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setPrefix("templates/");
+        templateResolver.setSuffix(".html");
+        templateResolver.setTemplateMode(TemplateMode.HTML);
+        templateResolver.setCharacterEncoding("UTF-8");
+        templateEngine.setTemplateResolver(templateResolver);
+
+        Context context = new Context();
+        context.setVariables(model);
+
+        return templateEngine.process(templateName, context);
+    }
+    public void sendEmail(String to, String sender, String subject, PotCategory potCategory, String potName, Object payload, Date currentDate, EmailInfo email) {
+        String companyName = "BEAM Technology";
+        String address = "ODTU Teknokent Galyum Binası No:D:1";
+        String phoneNumber = "216 55 48";
+        String companyEmail = "cengiz@beam.com";
+        try{
+            Map<String,Object> model = new HashMap<>();
+            model.put("to",to);
+            model.put("companyName",companyName);
+            model.put("address",address);
+            model.put("phoneNumber",phoneNumber);
+            model.put("companyEmail",companyEmail);
+            model.put("attackCategory",potCategory);
+            model.put("potName",potName);
+            model.put("date",currentDate);
+            String renderedHtml = renderThymeleafTemplate("mail.html",model);
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message);
+            message.setFrom(sender);
+            email.setEmailSender(sender);
+            message.setRecipients(MimeMessage.RecipientType.TO,to);
+            email.setEmailReceiver(to);
+            message.setSubject(subject);
+            email.setEmailSubject(subject);
+            message.setContent(renderedHtml,"text/html;charset=utf-8");
+            message.setSentDate(currentDate);
+            email.setEmailDate(currentDate);
+            email.setEmailMessage(String.valueOf(message));
+            emailInfoService.create(email);
+            mailSender.send(message);
+
+
+        }catch (Exception exception){
+            log.error("EmailSenderService sendEmail exception {}", exception.getMessage());
+        }
+    }
+
+
     public PaginatedSuspiciousActivities filterActivities(String firmRef, SuspiciousActivityFilter suspiciousActivityFilter, int page, int size){
         try {
             if(suspiciousActivityFilter.getOriginFilter() == null){
@@ -150,11 +216,22 @@ public class SuspiciousActivityService {
 
     public SuspiciousActivity createActivity(SuspiciousActivity newSuspiciousActivity, HttpServletRequest httpServletRequest) {
         SuspiciousActivity suspiciousActivity = new SuspiciousActivity();
+        EmailInfo email = new EmailInfo();
+
         try {
             String authToken = httpServletRequest.getHeader(TOKEN_HEADER);
             if(authToken != null && jwtService.validateJWT(authToken)){
                 newSuspiciousActivity.setId(UUID.randomUUID().toString());
+
+                firmService.get(newSuspiciousActivity.getFirmRef()).getAlertReceivers().forEach(receiver->{
+                    sendEmail(receiver,"fakemployeebeam@gmail.com","Alert",newSuspiciousActivity.getCategory(),
+                            newSuspiciousActivity.getPotName(), newSuspiciousActivity.getPayload(), new Date(),
+                            email
+                    );
+                });
                 suspiciousActivity = suspiciousRepository.save(newSuspiciousActivity);
+
+
             }
         } catch (Exception error) {
             log.error("SuspiciousActivity service createActivity exception: {}", error.getMessage());

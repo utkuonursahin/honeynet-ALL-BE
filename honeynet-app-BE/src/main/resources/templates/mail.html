@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      position: absolute;
+      text-align: center;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 600px;
+      padding: 20px;
+      border: 1px solid #333;
+    }
+    .header {
+      background-color: #333;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .logo {
+      max-width: 200px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+    .content {
+      padding: 20px;
+    }
+    .footer {
+      background-color: #f1f1f1;
+      color: #333;
+      padding: 10px;
+      text-align: center;
+    }
+    .company-info {
+      font-size: 10px;
+      color: rgba(0, 0, 0, 0.5);
+    }
+    .highlight{
+      color: red;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <!--                        doesnt work-->
+    <img src="https://www.beamteknoloji.com/wp-content/uploads/2020/01/beamlogo.png" alt="Logo" class="logo">
+  </div>
+  <div class="content">
+    <h2>Suspicious Activity Alert</h2>
+    <p>We <span class="highlight">detected</span> suspicious activities as <span th:text="${attackCategory}"></span> towards <span th:text="${potName}"></span> </p>
+    <p>You may want to check it out</p>
+    <p th:text="${date}"></p>
+  </div>
+  <div class="footer">
+    <!--                           <p th:text="${to}"></p>-->
+    <p>Thank you, <span th:text="${to}"></span></p>
+    <p class="company-info">[<span th:text="${companyName}"></span>] | [<span th:text="${address}"></span>]</p>
+    <p class="company-info">[<span th:text="${phoneNumber}"></span>] | [<span th:text="${companyEmail}"></span>]</p>
+  </div>
+</div>
+</body>
+</html>
