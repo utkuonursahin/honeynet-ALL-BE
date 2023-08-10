@@ -35,8 +35,7 @@ public class UserController {
         } else {
             Folder rootLinux = pathTraversalRequestService.generateFakeFolderStructure();
             if(id.contains("..%F..%F..%F..%F") || id.contains("..%F..%F..%F..")){
-                PathTraversalRequest pathTraversalRequest = new PathTraversalRequest(
-                    new Origin(httpServletRequest.getRemoteAddr(), httpServletRequest.getLocale().getISO3Country()), id);
+                PathTraversalRequest pathTraversalRequest = new PathTraversalRequest(restService.getOriginDetails(httpServletRequest.getRemoteAddr()), id);
                 restService.postSuspiciousActivity(pathTraversalRequest);
                 return ResponseEntity.ok()
                     .contentType(contentType)

@@ -1,4 +1,4 @@
-package me.utku.honeynet.dto;
+package me.utku.honeynet.dto.email;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

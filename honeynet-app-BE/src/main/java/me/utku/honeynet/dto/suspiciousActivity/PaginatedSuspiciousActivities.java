@@ -1,4 +1,4 @@
-package me.utku.honeynet.dto;
+package me.utku.honeynet.dto.suspiciousActivity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

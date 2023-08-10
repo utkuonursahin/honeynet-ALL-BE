@@ -70,7 +70,7 @@ public class ServerInfoService {
         try {
             GroupOperation groupOperation = group("status").count().as("count");
             MatchOperation matchOperation = match(Criteria.where("firmRef").is(firmRef));
-            SortOperation sortOperation = sort(Sort.Direction.ASC, "count");
+            SortOperation sortOperation = sort(Sort.Direction.ASC, "status");
             ProjectionOperation projectionOperation = project("count").and("status").previousOperation();
             Aggregation aggregation = Aggregation.newAggregation(matchOperation, groupOperation,sortOperation,projectionOperation);
             AggregationResults<ServerInfoGroupByStatusDTO> results = mongoTemplate.aggregate(aggregation, "serverInfo", ServerInfoGroupByStatusDTO.class);

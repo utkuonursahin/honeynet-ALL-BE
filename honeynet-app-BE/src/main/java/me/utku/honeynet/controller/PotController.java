@@ -1,12 +1,11 @@
 package me.utku.honeynet.controller;
 
 import lombok.RequiredArgsConstructor;
-import me.utku.honeynet.dto.EmailListener;
-import me.utku.honeynet.dto.EmailSetupRequest;
+import me.utku.honeynet.dto.email.EmailListener;
+import me.utku.honeynet.dto.email.EmailSetupRequest;
 import me.utku.honeynet.dto.GenericResponse;
 import me.utku.honeynet.dto.security.CustomUserDetails;
 import me.utku.honeynet.model.Pot;
-import me.utku.honeynet.model.ServerInfo;
 import me.utku.honeynet.service.PotService;
 import me.utku.honeynet.service.RestService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

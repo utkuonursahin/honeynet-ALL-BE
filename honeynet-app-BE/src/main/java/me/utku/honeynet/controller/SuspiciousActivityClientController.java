@@ -2,8 +2,8 @@ package me.utku.honeynet.controller;
 
 import lombok.RequiredArgsConstructor;
 import me.utku.honeynet.dto.GenericResponse;
-import me.utku.honeynet.dto.PaginatedSuspiciousActivities;
-import me.utku.honeynet.dto.SuspiciousActivityFilter;
+import me.utku.honeynet.dto.suspiciousActivity.PaginatedSuspiciousActivities;
+import me.utku.honeynet.dto.suspiciousActivity.SuspiciousActivityFilter;
 import me.utku.honeynet.dto.security.CustomUserDetails;
 import me.utku.honeynet.model.SuspiciousActivity;
 import me.utku.honeynet.service.SuspiciousActivityService;

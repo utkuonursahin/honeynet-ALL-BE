@@ -20,9 +20,10 @@ public class FileUploadService {
     public void saveFile(FileUpload fileUpload, MultipartFile file, HttpServletRequest httpServletRequest) throws IOException {
         String filename = diskService.saveFile(fileUpload.getId(), file.getBytes());
         FileUpload upload = new FileUpload();
+        Origin origin = restService.getOriginDetails(httpServletRequest.getRemoteAddr());
         upload.setFileNameOriginal(file.getOriginalFilename())
                 .setFileName(filename)
-                .setOrigin(new Origin(httpServletRequest.getRemoteAddr(), httpServletRequest.getLocale().getISO3Country()))
+                .setOrigin(origin)
                 .setId(UUID.randomUUID().toString());
         restService.postSuspiciousFileActivity(upload);
         fileUploadRepository.save(upload);

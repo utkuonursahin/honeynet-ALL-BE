@@ -1,8 +1,8 @@
 package me.utku.honeynet.service;
 
 import lombok.extern.slf4j.Slf4j;
-import me.utku.honeynet.dto.EmailListener;
-import me.utku.honeynet.dto.EmailSetupRequest;
+import me.utku.honeynet.dto.email.EmailListener;
+import me.utku.honeynet.dto.email.EmailSetupRequest;
 import me.utku.honeynet.model.ServerInfo;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;

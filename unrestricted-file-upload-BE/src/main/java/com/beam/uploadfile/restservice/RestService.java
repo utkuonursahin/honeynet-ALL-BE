@@ -3,13 +3,12 @@ package com.beam.uploadfile.restservice;
 import com.beam.uploadfile.diskservice.DiskService;
 import com.beam.uploadfile.jwtservice.JWTService;
 import com.beam.uploadfile.fileupload.FileUpload;
+import com.beam.uploadfile.suspiciousactivity.Origin;
 import com.beam.uploadfile.suspiciousactivity.SuspiciousActivity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -29,6 +28,17 @@ public class RestService {
     public RestService(RestTemplateBuilder restTemplateBuilder, JWTService jwtService) {
         this.restTemplate = restTemplateBuilder.build();
         this.jwtService = jwtService;
+    }
+
+    public Origin getOriginDetails(String ip){
+        //IP is the local ip of BEAM for developing purposes. Change it to parametrized ip later.
+        String url = "http://ip-api.com/json/" + "37.202.55.242" + "?fields=16578";
+        ResponseEntity<IPResponse> response = this.restTemplate.getForEntity(url, IPResponse.class);
+        if(response.getStatusCode() == HttpStatus.OK){
+            IPResponse body = response.getBody();
+            return new Origin(ip,body.countryCode(), body.lat(), body.lon());
+        }
+        return null;
     }
 
     public HttpHeaders generateHeaders() {

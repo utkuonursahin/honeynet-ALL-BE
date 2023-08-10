@@ -15,7 +15,8 @@ public class ScrawlAttemptService {
 
     public ScrawlAttempt create(ScrawlAttempt newScrawlAttempt, HttpServletRequest httpServletRequest){
         try{
-            newScrawlAttempt.setOrigin(new Origin(httpServletRequest.getRemoteAddr(),httpServletRequest.getLocale().getISO3Country()));
+            Origin origin = restService.getOriginDetails(httpServletRequest.getRemoteAddr());
+            newScrawlAttempt.setOrigin(origin);
             restService.postSuspiciousActivity(newScrawlAttempt);
         }catch (Exception error){
             log.error("ScrawlAttempt service save exception: {}", error.getMessage());

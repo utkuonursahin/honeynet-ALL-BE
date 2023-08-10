@@ -1,6 +1,8 @@
 package me.utku.webThreatsHoneypotBE.service;
 
 import lombok.extern.slf4j.Slf4j;
+import me.utku.webThreatsHoneypotBE.dto.IPResponse;
+import me.utku.webThreatsHoneypotBE.dto.Origin;
 import me.utku.webThreatsHoneypotBE.dto.SuspiciousActivity;
 import me.utku.webThreatsHoneypotBE.model.BruteForceRequest;
 import me.utku.webThreatsHoneypotBE.dto.PathTraversalRequest;
@@ -24,6 +26,17 @@ public class RestService {
     public RestService(RestTemplateBuilder restTemplateBuilder, JWTService jwtService) {
         this.restTemplate = restTemplateBuilder.build();
         this.jwtService = jwtService;
+    }
+
+    public Origin getOriginDetails(String ip){
+        //IP is the local ip of BEAM for developing purposes. Change it to parametrized ip later.
+        String url = "http://ip-api.com/json/" + "37.202.55.242" + "?fields=16578";
+        ResponseEntity<IPResponse> response = this.restTemplate.getForEntity(url, IPResponse.class);
+        if(response.getStatusCode() == HttpStatus.OK){
+            IPResponse body = response.getBody();
+            return new Origin(ip,body.countryCode(), body.lat(), body.lon());
+        }
+        return null;
     }
 
     public HttpHeaders generateHeaders(){

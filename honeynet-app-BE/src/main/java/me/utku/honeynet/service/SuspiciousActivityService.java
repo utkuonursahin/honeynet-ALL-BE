@@ -7,6 +7,8 @@ import me.utku.honeynet.dto.*;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByCategoryDTO;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginCountryDTO;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginSourceDTO;
+import me.utku.honeynet.dto.suspiciousActivity.PaginatedSuspiciousActivities;
+import me.utku.honeynet.dto.suspiciousActivity.SuspiciousActivityFilter;
 import me.utku.honeynet.enums.PotCategory;
 import me.utku.honeynet.model.SuspiciousActivity;
 import me.utku.honeynet.repository.SuspiciousRepository;
@@ -87,7 +89,7 @@ public class SuspiciousActivityService {
             AggregationResults<SuspiciousActivityGroupByOriginSourceDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByOriginSourceDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
-            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByCategory exception: {}", error.getMessage());
+            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByOriginSource exception: {}", error.getMessage());
             return null;
         }
     }
@@ -102,7 +104,7 @@ public class SuspiciousActivityService {
             AggregationResults<SuspiciousActivityGroupByOriginCountryDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByOriginCountryDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
-            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByCategory exception: {}", error.getMessage());
+            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByOriginCountry exception: {}", error.getMessage());
             return null;
         }
     }
@@ -120,7 +122,7 @@ public class SuspiciousActivityService {
     public PaginatedSuspiciousActivities filterActivities(String firmRef, SuspiciousActivityFilter suspiciousActivityFilter, int page, int size){
         try {
             if(suspiciousActivityFilter.getOriginFilter() == null){
-                suspiciousActivityFilter.setOriginFilter(new Origin("",""));
+                suspiciousActivityFilter.setOriginFilter(new Origin("","","",""));
             }
             if(suspiciousActivityFilter.getDateFilters().length != 2){
                 suspiciousActivityFilter.setDateFilters(

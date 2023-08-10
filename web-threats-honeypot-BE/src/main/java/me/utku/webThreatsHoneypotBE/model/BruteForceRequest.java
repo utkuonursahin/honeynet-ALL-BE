@@ -21,4 +21,5 @@ public class BruteForceRequest extends Base{
     private String payloadUsername;
     private String payloadPassword;
     private LocalDateTime date;
+    private String firmRef;
 }
