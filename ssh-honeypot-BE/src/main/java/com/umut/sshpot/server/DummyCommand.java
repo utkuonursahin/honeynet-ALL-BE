@@ -34,7 +34,8 @@ public class DummyCommand implements Command {
         logger.LogToFileDummyCommand("Session IP: " + ip + ": " + msg);
         if (Objects.equals(msg, "start()")) {
             logger.SaveLogEntriesToDatabase(msg, ip, entryTime);
-            getRestService().postSuspiciousActivity(new Origin(ip,null),entryTime,msg);
+            Origin origin = getRestService().getOriginDetails(ip);
+            getRestService().postSuspiciousActivity(origin,entryTime,msg);
         }
     }
 

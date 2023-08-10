@@ -24,7 +24,16 @@ public class RestService {
     private final RestTemplate restTemplate;
     private final JWTService jwtService;
 
-
+    public Origin getOriginDetails(String ip){
+        //IP is the local ip of BEAM for developing purposes. Change it to parametrized ip later.
+        String url = "http://ip-api.com/json/" + "37.202.55.242" + "?fields=16578";
+        ResponseEntity<IPResponse> response = this.restTemplate.getForEntity(url, IPResponse.class);
+        if(response.getStatusCode() == HttpStatus.OK){
+            IPResponse body = response.getBody();
+            return new Origin(ip,body.countryCode(), body.lat(), body.lon());
+        }
+        return null;
+    }
 
     public HttpHeaders generateHeaders(){
         try{
