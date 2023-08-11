@@ -70,7 +70,7 @@ public class ServerInfoService {
         try {
             GroupOperation groupOperation = group("status").count().as("count");
             MatchOperation matchOperation = match(Criteria.where("firmRef").is(firmRef));
-            SortOperation sortOperation = sort(Sort.Direction.ASC, "status");
+            SortOperation sortOperation = sort(Sort.DEFAULT_DIRECTION, "status");
             ProjectionOperation projectionOperation = project("count").and("status").previousOperation();
             Aggregation aggregation = Aggregation.newAggregation(matchOperation, groupOperation,sortOperation,projectionOperation);
             AggregationResults<ServerInfoGroupByStatusDTO> results = mongoTemplate.aggregate(aggregation, "serverInfo", ServerInfoGroupByStatusDTO.class);
@@ -83,9 +83,15 @@ public class ServerInfoService {
 
     public int findAvailablePort(){
         try{
-            ServerSocket serverSocket = new ServerSocket(0);
-            int port = serverSocket.getLocalPort();
-            serverSocket.close();
+            ServerSocket serverSocket;
+            int port;
+            boolean isReserved;
+            do{
+                serverSocket = new ServerSocket(0);
+                port = serverSocket.getLocalPort();
+                serverSocket.close();
+                isReserved = serverInfoRepository.existsByPort(Integer.toString(port));
+            } while (isReserved);
             return port;
         } catch (Exception exception){
             log.error("ServerInfo service findAvailablePort exception: {}",exception.getMessage());

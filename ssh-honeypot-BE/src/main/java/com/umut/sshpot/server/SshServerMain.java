@@ -26,14 +26,18 @@ import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.shell.ShellFactory;
 import org.apache.sshd.server.subsystem.SubsystemFactory;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.SpringApplication;
 
 
 public class SshServerMain extends SshServerCliSupport {
 
     static String[] rootPwds= {"123456", "root", "admin", "123", "0", "1"};
     static String[] piPwds= {"raspberry", "pi"};
+    @Value("${server.port}")
+    private static int port;
     public static void main(String[] args) throws Exception {
-        int port = 22;
+        SpringApplication.run( SshServerMain.class, args );
         boolean error = false;
         String hostKeyType = AbstractGeneratorHostKeyProvider.DEFAULT_ALGORITHM;
         int hostKeySize = 0;

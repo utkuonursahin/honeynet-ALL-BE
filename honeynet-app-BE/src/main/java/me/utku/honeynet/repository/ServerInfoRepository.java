@@ -8,4 +8,5 @@ import java.util.List;
 public interface ServerInfoRepository extends MongoRepository<ServerInfo,String> {
     ServerInfo findByPotRefAndFirmRef(String potId, String firmId);
     List<ServerInfo> findAllByFirmRef(String firmId);
+    boolean existsByPort(String port);
 }
