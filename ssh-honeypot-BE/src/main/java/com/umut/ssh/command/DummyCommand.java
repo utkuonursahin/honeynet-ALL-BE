@@ -11,7 +11,6 @@ import org.apache.sshd.server.ExitCallback;
 import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.command.Command;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.web.client.RestTemplate;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
