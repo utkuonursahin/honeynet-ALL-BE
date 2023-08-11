@@ -1,26 +1,22 @@
-package com.umut.sshpot.server;
+package com.umut.ssh.command;
 
-import com.umut.sshpot.filesystem.Directory;
-import com.umut.sshpot.filesystem.File;
-import com.umut.sshpot.services.JWTService;
-import com.umut.sshpot.services.RestService;
-import com.umut.sshpot.suspiciousactivity.Origin;
-import com.umut.sshpot.util.DataLog;
-import lombok.RequiredArgsConstructor;
+import com.umut.ssh.filesystem.Directory;
+import com.umut.ssh.filesystem.File;
+import com.umut.ssh.service.JWTService;
+import com.umut.ssh.service.RestService;
+import com.umut.ssh.suspiciousactivity.Origin;
+import com.umut.ssh.util.DataLog;
 import org.apache.sshd.server.Environment;
 import org.apache.sshd.server.ExitCallback;
 import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.command.Command;
-import org.springframework.stereotype.Service;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.web.client.RestTemplate;
 import java.io.*;
-import java.net.SocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Objects;
 
-@Service
-@RequiredArgsConstructor
 public class DummyCommand implements Command {
 
     public void log(String msg) {
@@ -33,7 +29,6 @@ public class DummyCommand implements Command {
         String ip = channel.getSession().getRemoteAddress().toString().replaceFirst(Character.toString(firstChar), "");
         logger.LogToFileDummyCommand("Session IP: " + ip + ": " + msg);
         if (Objects.equals(msg, "start()")) {
-            logger.SaveLogEntriesToDatabase(msg, ip, entryTime);
             Origin origin = getRestService().getOriginDetails(ip);
             getRestService().postSuspiciousActivity(origin,entryTime,msg);
         }
@@ -50,8 +45,9 @@ public class DummyCommand implements Command {
 
     private final String username;
 
+
     private static RestService getRestService() {
-        RestTemplate rest = new RestTemplate();
+        RestTemplateBuilder rest = new RestTemplateBuilder();
         return new RestService(rest, getJwtService());
     }
 

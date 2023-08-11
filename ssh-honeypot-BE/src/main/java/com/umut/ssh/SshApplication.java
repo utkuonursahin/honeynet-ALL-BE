@@ -1,11 +1,7 @@
-package com.umut.sshpot.server;
+package com.umut.ssh;
 
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
-
-import com.umut.sshpot.util.SimpleLog;
+import com.umut.ssh.command.DummyCommand;
+import com.umut.ssh.util.SimpleLog;
 import org.apache.sshd.cli.CliLogger;
 import org.apache.sshd.cli.server.SshServerCliSupport;
 import org.apache.sshd.common.NamedResource;
@@ -26,13 +22,22 @@ import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.shell.ShellFactory;
 import org.apache.sshd.server.subsystem.SubsystemFactory;
 import org.slf4j.Logger;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.stream.Collectors;
 
-public class SshServerMain extends SshServerCliSupport {
-
+@SpringBootApplication
+public class SshApplication extends SshServerCliSupport {
     static String[] rootPwds= {"123456", "root", "admin", "123", "0", "1"};
     static String[] piPwds= {"raspberry", "pi"};
+
     public static void main(String[] args) throws Exception {
+        SpringApplication.run(SshApplication.class, args);
         int port = 22;
         boolean error = false;
         String hostKeyType = AbstractGeneratorHostKeyProvider.DEFAULT_ALGORITHM;
@@ -134,7 +139,7 @@ public class SshServerMain extends SshServerCliSupport {
 
         PropertyResolver resolver = PropertyResolverUtils.toPropertyResolver(options);
         Level level = CliLogger.resolveLoggingVerbosity(resolver, args);
-        Logger logger = CliLogger.resolveSystemLogger(SshServerMain.class, level);
+        Logger logger = CliLogger.resolveSystemLogger(SshApplication.class, level);
         SshServer sshd = error
                 ? null
                 : setupIoServiceFactory(

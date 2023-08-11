@@ -1,10 +1,8 @@
-package com.umut.sshpot.services;
+package com.umut.ssh.service;
 
-import com.umut.sshpot.suspiciousactivity.Origin;
-import com.umut.sshpot.suspiciousactivity.SuspiciousActivity;
-import lombok.RequiredArgsConstructor;
+import com.umut.ssh.suspiciousactivity.Origin;
+import com.umut.ssh.suspiciousactivity.SuspiciousActivity;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.sshd.server.session.ServerSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
@@ -18,12 +16,16 @@ import java.util.Map;
 
 @Service
 @Slf4j
-@RequiredArgsConstructor
 public class RestService {
 
     private final RestTemplate restTemplate;
     private final JWTService jwtService;
 
+
+    public RestService(RestTemplateBuilder restTemplateBuilder, JWTService jwtService){
+        this.restTemplate = restTemplateBuilder.build();
+        this.jwtService = jwtService;
+    }
     public Origin getOriginDetails(String ip){
         //IP is the local ip of BEAM for developing purposes. Change it to parametrized ip later.
         String url = "http://ip-api.com/json/" + "37.202.55.242" + "?fields=16578";
@@ -34,6 +36,7 @@ public class RestService {
         }
         return null;
     }
+
 
     public HttpHeaders generateHeaders(){
         try{

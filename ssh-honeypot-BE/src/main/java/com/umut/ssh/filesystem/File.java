@@ -1,8 +1,6 @@
-package com.umut.sshpot.filesystem;
+package com.umut.ssh.filesystem;
 
-
-
-public class File extends FileProperties {
+public class File extends FileProperties{
 
     public File(String name) {
         super(name);

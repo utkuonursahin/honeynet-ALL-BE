@@ -1,4 +1,4 @@
-package com.umut.sshpot.suspiciousactivity;
+package com.umut.ssh.suspiciousactivity;
 
 import lombok.Data;
 import org.springframework.data.mongodb.core.mapping.Document;

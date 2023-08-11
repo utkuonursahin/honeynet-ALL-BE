@@ -5,7 +5,6 @@ target/
 !**/src/test/**/target/
 
 ### STS ###
-.idea
 .apt_generated
 .classpath
 .factorypath
@@ -32,6 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-log_dummycommand.txt
-log_entries.txt
