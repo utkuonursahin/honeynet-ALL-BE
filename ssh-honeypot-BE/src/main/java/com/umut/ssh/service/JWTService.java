@@ -1,4 +1,4 @@
-package com.umut.sshpot.services;
+package com.umut.ssh.service;
 
 
 import org.jose4j.jws.AlgorithmIdentifiers;

@@ -1,4 +1,4 @@
-package com.umut.sshpot.filesystem;
+package com.umut.ssh.filesystem;
 
 
 import lombok.Getter;

@@ -1,13 +1,13 @@
-package com.umut.sshpot.filesystem;
+package com.umut.ssh.filesystem;
 
 public abstract class FileProperties {
 
     protected String name;
-    protected Directory parent= null;
+    protected Directory parent = null;
 
 
     public FileProperties(String name) {
-        this.name= name;
+        this.name = name;
     }
 
     public String getName() {
@@ -15,7 +15,7 @@ public abstract class FileProperties {
     }
 
     protected void setParentDirectory(Directory d) {
-        parent= d;
+        parent = d;
     }
 
     public Directory getParentDirectory() {

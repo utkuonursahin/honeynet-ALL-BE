@@ -1,10 +1,9 @@
-package com.umut.sshpot.util;
+package com.umut.ssh.util;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
-import com.umut.sshpot.suspiciousactivity.Origin;
 import org.bson.Document;
 import org.json.JSONObject;
 
@@ -16,39 +15,6 @@ import java.util.Date;
 import java.util.UUID;
 
 public class DataLog {
-    /*
-    public String[] GeolocalizeIp(String IpAddress) throws IOException {
-        try {
-            // Send a GET request to the IP-API API to get the location of the IP address
-            URL url = new URL("http://ip-api.com/json/" + IpAddress+"?fields=61439");
-            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-            con.setRequestMethod("GET");
-            con.setConnectTimeout(5000);
-            con.setReadTimeout(5000);
-
-
-            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-            String inputLine;
-            StringBuilder content = new StringBuilder();
-            while ((inputLine = in.readLine()) != null) {
-                content.append(inputLine);
-            }
-            in.close();
-
-            JSONObject json = new JSONObject(content.toString());
-
-
-            String query =json.getString("query");
-            String status = json.getString("status");
-            String country = json.getString("country");
-            String city = json.getString("city");
-
-            return new String[] {query,status,country,city};
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }*/
     public void SaveLogEntriesToDatabase(String logMessage, String IP, String time) {
         try {
             // Log to the file as before
@@ -65,18 +31,9 @@ public class DataLog {
             MongoCollection<Document> collection = database.getCollection("sshEntries");
 
 
-       /*
-                String[] IP_Data = new String[0];
-                try {
-                IP_Data = GeolocalizeIp(IP);
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-*/
             // Create a document to insert into the collection
             Document logDocument = new Document()
-                    .append("_id",UUID.randomUUID().toString())
+                    .append("_id", UUID.randomUUID().toString())
                     .append("msg",logMessage)
                     .append("time",time)
                     .append("ip",IP);
@@ -105,21 +62,35 @@ public class DataLog {
             e.printStackTrace();
         }
     }
-}
+    public void getLocation(String ipAddress) throws IOException {
+        String apiEndpoint = "http://ip-api.com/json/" + ipAddress;
+        URL url = new URL(apiEndpoint);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        int responseCode = connection.getResponseCode();
+        String ip = null;
+        String country = null;
+        String city = null;
+        String lat = null;
+        String lon = null;
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            String inputLine;
+            StringBuilder response = new StringBuilder();
 
-/*
-public void saveFileToDatabase(String entryTime,String ip) {
-        try (MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017")) {
-            MongoDatabase database = mongoClient.getDatabase("hooney");
-            MongoCollection<Document> collection = database.getCollection("ssh");
-            Document logDocument = new Document();
-            logDocument.append("_id", UUID.randomUUID().toString())
-                    .append("entryTime", entryTime)
-                    .append("ip",ip);
-            collection.insertOne(logDocument);
-        } catch (Exception e) {
-            e.printStackTrace();
+            while ((inputLine = in.readLine()) != null) {
+                response.append(inputLine);
+            }
+            in.close();
+            JSONObject jsonResponse = new JSONObject(response.toString());
+
+            ip = jsonResponse.getString("query");
+            country = jsonResponse.getString("country");
+            city = jsonResponse.getString("city");
+            lat = String.valueOf(jsonResponse.getFloat("lat"));
+            lon = String.valueOf(jsonResponse.getFloat("lon"));
+        } else {
+            System.out.println("Request failed with response code: " + responseCode);
         }
     }
-
- */
+}

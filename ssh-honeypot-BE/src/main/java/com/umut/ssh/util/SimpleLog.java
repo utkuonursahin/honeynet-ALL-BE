@@ -1,8 +1,9 @@
-package com.umut.sshpot.util;
-
+package com.umut.ssh.util;
 
 import java.io.PrintStream;
-public final class SimpleLog {
+
+public class SimpleLog {
+
     private SimpleLog() {}
 
     public static PrintStream out= System.out;
