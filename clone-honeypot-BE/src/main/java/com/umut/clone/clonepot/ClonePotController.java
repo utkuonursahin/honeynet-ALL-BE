@@ -16,6 +16,6 @@ public class ClonePotController {
 
     @GetMapping()
     public String cloneHtml(@RequestParam(value = "url",required = true) String url) {
-        return clonePotService.cloneHtmlPage(url);
+        return clonePotService.getPage(url);
     }
 }

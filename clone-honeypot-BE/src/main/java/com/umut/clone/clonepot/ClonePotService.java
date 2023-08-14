@@ -1,48 +1,62 @@
 package com.umut.clone.clonepot;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import javax.print.Doc;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class ClonePotService {
-    public String cloneHtmlPage(String url) {
-        try {
-            Document document = Jsoup.connect(url).get();
-            Elements linkElements = document.select("a");
+    private final File indexHtml = new File(System.getProperty("user.dir")+"\\src\\main\\resources\\templates\\"+"index.html");
+    private PrintWriter writer = null;
 
-            File logFile = new File("log_" + UUID.randomUUID() + ".html");
-            BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, true));
-            writer.write(document.outerHtml());
-            writer.newLine();
-            writer.close();
-
+    public String getPage(String url) {
+        Document doc = clone(url);
+        try{
+            Elements linkElements = doc.select("a");
             for (Element linkElement : linkElements) {
-                String linkUrl = linkElement.attr("href"); // Get the link URL
-                if (!linkUrl.isEmpty()) {
-                    cloneLinkedPage(linkUrl, logFile);
+                String linkUrl = linkElement.attr("href");
+                if(linkUrl.equals("#")) linkElement.attr("href", indexHtml.getName());
+                else if (linkUrl.contains("http") || linkUrl.contains("https")) {
+                    String uuid = UUID.randomUUID().toString();
+                    linkElement.attr("href", uuid + ".html");
+                    File page = new File(System.getProperty("user.dir")+"\\src\\main\\resources\\static\\"+ uuid + ".html");
+                    write(page,clone(linkUrl).outerHtml());
                 }
             }
-            return document.html();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "Error cloning HTML page: " + e.getMessage();
+            write(indexHtml,doc.outerHtml());
+
+        }catch (Exception error) {
+            log.error("Clone pot service init error: {}", error.getMessage());
+        }
+        return doc.outerHtml();
+    }
+
+    public void write(File file, String outerHtml){
+        try{
+            writer = new PrintWriter(file, StandardCharsets.UTF_8);
+            writer.write(outerHtml);
+            writer.close();
+        }catch (Exception error){
+            log.error("Clone pot service clone error: {}", error.getMessage());
         }
     }
-    private void cloneLinkedPage(String linkUrl, File targetFile) throws IOException {
-        Document linkedDocument = Jsoup.connect(linkUrl).get();
-        BufferedWriter writer = new BufferedWriter(new FileWriter(targetFile, true));
-        writer.write(linkedDocument.outerHtml());
-        writer.newLine();
-        writer.close();
+    public Document clone(String url) {
+        try {
+            return Jsoup.connect(url).get();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new Document(null);
+        }
     }
 }
-

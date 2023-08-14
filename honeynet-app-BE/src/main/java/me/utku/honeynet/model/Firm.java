@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 @Document
-@TypeAlias("firm")
+@TypeAlias("Firm")
 public class Firm extends Base {
     private String firmName;
     private String previewImgPath;
