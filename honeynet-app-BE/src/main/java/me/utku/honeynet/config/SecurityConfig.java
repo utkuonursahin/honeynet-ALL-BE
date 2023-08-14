@@ -118,7 +118,7 @@ public class SecurityConfig {
         When enabling allowCredentials, providing url(s) in allowedOrigins is a must for security reasons.
         * Finally, JSESSION would not be set in the browser cookies if the allowed origins is set to * and allowCredentials is not set.
         */
-        configuration.setAllowedOrigins(List.of("http://localhost:4200"));
+        configuration.setAllowedOrigins(List.of("http://localhost:4200","http://localhost:8080"));
         configuration.setAllowedMethods(List.of("GET","POST","PATCH","PUT","DELETE","OPTIONS"));
         configuration.setAllowedHeaders(List.of("Accept", "Authorization", "Content-Type", "In-App-Auth-Token","Origin", "X-Requested-With"));
         configuration.setAllowCredentials(true);
