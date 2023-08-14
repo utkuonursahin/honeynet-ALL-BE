@@ -14,8 +14,6 @@ import java.util.UUID;
 
 @Service
 public class ClonePotService {
-
-
     public String cloneHtmlPage(String url) {
         try {
             Document document = Jsoup.connect(url).get();

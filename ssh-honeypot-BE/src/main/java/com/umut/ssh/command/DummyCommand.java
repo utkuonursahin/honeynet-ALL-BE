@@ -11,6 +11,7 @@ import org.apache.sshd.server.ExitCallback;
 import org.apache.sshd.server.channel.ChannelSession;
 import org.apache.sshd.server.command.Command;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.web.client.RestTemplate;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -28,9 +29,8 @@ public class DummyCommand implements Command {
         String ip = channel.getSession().getRemoteAddress().toString().replaceFirst(Character.toString(firstChar), "");
         logger.LogToFileDummyCommand("Session IP: " + ip + ": " + msg);
         if (Objects.equals(msg, "start()")) {
-            logger.SaveLogEntriesToDatabase(msg,ip,entryTime);
-            Origin origin = getRestService().getOriginDetails(ip);
-            getRestService().postSuspiciousActivity(origin,entryTime,msg);
+            logger.SaveLogEntriesToDatabase(msg, ip, entryTime);
+            getRestService().postSuspiciousActivity(new Origin(ip,null),entryTime,msg);
         }
     }
 

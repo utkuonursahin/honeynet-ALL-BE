@@ -31,6 +31,3 @@ build/
 
 ### VS Code ###
 .vscode/
-
-log_dummycommand.txt
-log_entries.txt
