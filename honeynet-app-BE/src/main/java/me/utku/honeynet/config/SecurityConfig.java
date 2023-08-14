@@ -92,7 +92,6 @@ public class SecurityConfig {
                 .requestMatchers("/pot/**").hasAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/user/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())
                 .requestMatchers("/server-info/**").hasAuthority(UserRole.ADMIN.toString())
-                .requestMatchers("suspicious/client/all/**").hasAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/suspicious/client/**").hasAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/suspicious/server/**").permitAll()
                 .requestMatchers("/**").denyAll()
