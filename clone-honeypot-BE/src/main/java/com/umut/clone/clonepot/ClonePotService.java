@@ -2,6 +2,7 @@ package com.umut.clone.clonepot;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,7 +21,19 @@ public class ClonePotService {
     private final File indexHtml = new File(System.getProperty("user.dir")+"\\src\\main\\resources\\templates\\"+"index.html");
     private PrintWriter writer = null;
 
+    public void clearDirectories(){
+        try{
+            File directory = new File(System.getProperty("user.dir")+"\\src\\main\\resources\\static\\");
+            FileUtils.cleanDirectory(directory);
+            directory = new File(System.getProperty("user.dir")+"\\src\\main\\resources\\templates\\");
+            FileUtils.cleanDirectory(directory);
+        } catch (Exception error){
+            log.error("Clone pot service clearDirectories error: {}", error.getMessage());
+        }
+    }
+
     public String getPage(String url) {
+        clearDirectories();
         Document doc = clone(url);
         try{
             Elements linkElements = doc.select("a");
@@ -30,7 +43,7 @@ public class ClonePotService {
                 else if (linkUrl.contains("http") || linkUrl.contains("https")) {
                     String uuid = UUID.randomUUID().toString();
                     linkElement.attr("href", uuid + ".html");
-                    File page = new File(System.getProperty("user.dir")+"\\src\\main\\resources\\static\\"+ uuid + ".html");
+                    File page = new File(System.getProperty("user.dir")+"\\src\\main\\resources\\templates\\"+ uuid + ".html");
                     write(page,clone(linkUrl).outerHtml());
                 }
             }
