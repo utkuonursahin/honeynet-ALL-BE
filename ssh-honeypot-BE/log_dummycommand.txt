@@ -90,3 +90,17 @@
 [2023-08-11 13:26:56] Session IP: [0:0:0:0:0:0:0:1]:51683: output: fsajklsafj: command not found.
 [2023-08-11 13:26:58] Session IP: [0:0:0:0:0:0:0:1]:51683: command: exit
 [2023-08-11 13:26:58] Session IP: [0:0:0:0:0:0:0:1]:51683: destroy()
+[2023-08-11 15:33:56] Session IP: [0:0:0:0:0:0:0:1]:54033: DummyCommand()
+[2023-08-11 15:33:56] Session IP: [0:0:0:0:0:0:0:1]:54033: setOutputStream()
+[2023-08-11 15:33:56] Session IP: [0:0:0:0:0:0:0:1]:54033: setErrorStream()
+[2023-08-11 15:33:56] Session IP: [0:0:0:0:0:0:0:1]:54033: setInputStream()
+[2023-08-11 15:33:56] Session IP: [0:0:0:0:0:0:0:1]:54033: setExitCallback()
+[2023-08-11 15:33:56] Session IP: [0:0:0:0:0:0:0:1]:54033: start()
+[2023-08-11 15:33:58] Session IP: [0:0:0:0:0:0:0:1]:54033: command: kfsdkÅfkfdslÅfksd
+[2023-08-11 15:33:58] Session IP: [0:0:0:0:0:0:0:1]:54033: output: kfsdkÅfkfdslÅfksd: command not found.
+[2023-08-11 15:33:59] Session IP: [0:0:0:0:0:0:0:1]:54033: command: fksdlkfsdÅ
+[2023-08-11 15:33:59] Session IP: [0:0:0:0:0:0:0:1]:54033: output: fksdlkfsdÅ: command not found.
+[2023-08-11 15:34:00] Session IP: [0:0:0:0:0:0:0:1]:54033: command: fksldÅklfsd
+[2023-08-11 15:34:00] Session IP: [0:0:0:0:0:0:0:1]:54033: output: fksldÅklfsd: command not found.
+[2023-08-11 15:34:02] Session IP: [0:0:0:0:0:0:0:1]:54033: command: exit
+[2023-08-11 15:34:02] Session IP: [0:0:0:0:0:0:0:1]:54033: destroy()

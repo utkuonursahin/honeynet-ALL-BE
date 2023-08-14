@@ -22,10 +22,10 @@ import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.shell.ShellFactory;
 import org.apache.sshd.server.subsystem.SubsystemFactory;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Level;
@@ -36,9 +36,11 @@ public class SshApplication extends SshServerCliSupport {
     static String[] rootPwds= {"123456", "root", "admin", "123", "0", "1"};
     static String[] piPwds= {"raspberry", "pi"};
 
+    @Value("${server.port}")
+    static int port;
+
     public static void main(String[] args) throws Exception {
         SpringApplication.run(SshApplication.class, args);
-        int port = 22;
         boolean error = false;
         String hostKeyType = AbstractGeneratorHostKeyProvider.DEFAULT_ALGORITHM;
         int hostKeySize = 0;
@@ -57,7 +59,7 @@ public class SshApplication extends SshServerCliSupport {
                     error = true;
                     break;
                 }
-                port = Integer.parseInt(args[i]);
+                 port = Integer.parseInt(args[i]);
             } else if ("-key-type".equals(argName)) {
                 i++;
                 if (i >= numArgs) {
@@ -131,8 +133,9 @@ public class SshApplication extends SshServerCliSupport {
                         }
                         certFiles.add(optValue);
                     }
-                    case ConfigFileReaderSupport.PORT_CONFIG_PROP -> port = Integer.parseInt(optValue);
-                    default -> options.put(optName, optValue);
+                    case ConfigFileReaderSupport.PORT_CONFIG_PROP -> {
+                    }
+                        default -> options.put(optName, optValue);
                 }
             }
         }
