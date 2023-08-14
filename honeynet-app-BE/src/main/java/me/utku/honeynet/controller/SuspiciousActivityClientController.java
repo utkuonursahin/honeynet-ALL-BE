@@ -10,8 +10,6 @@ import me.utku.honeynet.service.SuspiciousActivityService;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/suspicious/client")
 @RequiredArgsConstructor
@@ -30,14 +28,6 @@ public class SuspiciousActivityClientController {
         SuspiciousActivity suspiciousActivity = suspiciousActivityService.getActivityById(id);
         return GenericResponse.<SuspiciousActivity>builder().data(suspiciousActivity).statusCode(200).build();
     }
-
-    @GetMapping("/all")
-    public GenericResponse<List<SuspiciousActivity>> getAllActivities(){
-        List<SuspiciousActivity> suspiciousActivities = suspiciousActivityService.getAllSuspiciousActivities();
-        return GenericResponse.<List<SuspiciousActivity>>builder().data(suspiciousActivities).statusCode(200).build();
-    }
-
-
 
     @PostMapping("/filter")
     public GenericResponse<PaginatedSuspiciousActivities> getFilteredActivities(
