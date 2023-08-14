@@ -10,7 +10,7 @@ import java.util.List;
 
 @Document
 @Data
-@TypeAlias("email")
+@TypeAlias("Email-Info")
 public class EmailInfo extends Base{
     private String emailSender;
     private String emailReceiver;
