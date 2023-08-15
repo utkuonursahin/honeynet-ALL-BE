@@ -6,5 +6,6 @@ public enum PotCategory {
   WEB_SCRAPING,
   EMAIL,
   FILE_UPLOAD,
-  SSH
+  SSH,
+  WEB_CLONE
 }
