@@ -35,7 +35,7 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class    SuspiciousActivityService {
+public class SuspiciousActivityService {
     private final SuspiciousRepository suspiciousRepository;
     private final JWTService jwtService;
     private final MongoTemplate mongoTemplate;
@@ -131,16 +131,7 @@ public class    SuspiciousActivityService {
         return suspiciousActivity;
     }
 
-    public List<SuspiciousActivity> getAllSuspiciousActivities(){
-        List<SuspiciousActivity> suspiciousActivities = new ArrayList<>();
-        try {
-            suspiciousActivities = suspiciousRepository.findAll();
-        }catch (Exception exception){
-            log.error("SuspicioysActivity serrvice getAll exception: {}",exception.getMessage());
-        }
 
-        return suspiciousActivities;
-    }
     private static String renderThymeleafTemplate(String templateName, Map<String,Object> model){
         TemplateEngine templateEngine = new TemplateEngine();
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
@@ -208,7 +199,6 @@ public class    SuspiciousActivityService {
             model.put("sourceIP",origin.source());
             String renderedHtml = renderThymeleafTemplate("mail.html",model);
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message);
             message.setFrom(sender);
             email.setEmailSender(sender);
             message.setRecipients(MimeMessage.RecipientType.TO,to);
@@ -228,9 +218,6 @@ public class    SuspiciousActivityService {
             log.error("EmailSenderService sendEmail exception {}", exception.getMessage());
         }
     }
-
-
-
 
     public SuspiciousActivity createActivity(SuspiciousActivity newSuspiciousActivity, HttpServletRequest httpServletRequest) {
         SuspiciousActivity suspiciousActivity = new SuspiciousActivity();

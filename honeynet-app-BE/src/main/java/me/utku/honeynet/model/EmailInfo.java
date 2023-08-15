@@ -15,11 +15,9 @@ public class EmailInfo extends Base{
     private String emailSender;
     private String emailReceiver;
     private String emailMessage;
-    //    private String potCategory;
     private String emailSubject;
     private Date emailDate;
     private String suspiciousActivityRef;
 
-    private String backgroundImage;
 }
 

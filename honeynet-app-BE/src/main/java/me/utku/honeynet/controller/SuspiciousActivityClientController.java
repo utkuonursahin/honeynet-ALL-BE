@@ -17,28 +17,11 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SuspiciousActivityClientController {
     private final SuspiciousActivityService suspiciousActivityService;
-
-    /*@GetMapping
-    public GenericResponse<PaginatedSuspiciousActivities> getActivities(@RequestParam(defaultValue = "0") int page,
-                                                                        @RequestParam(defaultValue = "20") int size) {
-        PaginatedSuspiciousActivities activities = suspiciousActivityService.getAllActivities(page, size);
-        return GenericResponse.<PaginatedSuspiciousActivities>builder().data(activities).statusCode(200).build();
-    }*/
-
     @GetMapping("/{id}")
     public GenericResponse<SuspiciousActivity> getActivity(@PathVariable String id) {
         SuspiciousActivity suspiciousActivity = suspiciousActivityService.getActivityById(id);
         return GenericResponse.<SuspiciousActivity>builder().data(suspiciousActivity).statusCode(200).build();
     }
-
-    @GetMapping("/all")
-    public GenericResponse<List<SuspiciousActivity>> getAllActivities(){
-        List<SuspiciousActivity> suspiciousActivities = suspiciousActivityService.getAllSuspiciousActivities();
-        return GenericResponse.<List<SuspiciousActivity>>builder().data(suspiciousActivities).statusCode(200).build();
-    }
-
-
-
     @PostMapping("/filter")
     public GenericResponse<PaginatedSuspiciousActivities> getFilteredActivities(
         @AuthenticationPrincipal CustomUserDetails userDetails,

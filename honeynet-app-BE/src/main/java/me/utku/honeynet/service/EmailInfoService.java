@@ -32,17 +32,6 @@ public class EmailInfoService {
         paginatedEmailInfos.setTotalPage(Long.valueOf(emailInfos.getTotalPages()));
         return paginatedEmailInfos;
     }
-
-    public PaginatedEmailInfos getAllEmailInfos(int page, int size){
-        try{
-            Pageable pageable = PageRequest.of(page,size);
-            Page<EmailInfo> infos = emailInfoRepository.findAll(pageable);
-            return createPaginatedEmailInfos(infos,page,size);
-        }catch (Exception exception){
-            log.error("Paginated get Email Info exception : {}",exception.getMessage());
-        }return null;
-    }
-
     public PaginatedEmailInfos filterEmails(EmailInfoFilter emailInfoFilter, int page, int size) {
         try {
             if (emailInfoFilter.getDateFilters().length != 2) {
@@ -57,14 +46,10 @@ public class EmailInfoService {
             System.out.println(emailInfoFilter);
             Pageable pageable = PageRequest.of(page,size);
             Page<EmailInfo> emailInfos = null;
-//            emailInfos = emailInfoRepository.findAllByEmailReceiverAndEmailDateBetween(
-//                emailInfoFilter.getReceiverFilter(),
-//                emailInfoFilter.getDateFilters()[0],
-//                emailInfoFilter.getDateFilters()[1],
-//                pageable
-//            );
-            emailInfos = emailInfoRepository.findAllByEmailReceiverContains(
+            emailInfos = emailInfoRepository.findAllByEmailReceiverContainsAndEmailDateBetween(
                     emailInfoFilter.getReceiverFilter(),
+                    emailInfoFilter.getDateFilters()[0],
+                    emailInfoFilter.getDateFilters()[1],
                     pageable
             );
             return createPaginatedEmailInfos(emailInfos, page, size);
@@ -76,63 +61,17 @@ public class EmailInfoService {
         return null;
     }
 
-
-
-
-
-    public EmailInfo create(EmailInfo emailInfo){//revision needed
+    public EmailInfo create(EmailInfo emailInfo){
         EmailInfo email = new EmailInfo();
         try {
-            emailInfo.setId(UUID.randomUUID().toString());//check later
+            emailInfo.setId(UUID.randomUUID().toString());
             email = emailInfoRepository.save(emailInfo);
             log.info("New email has created.");
         }catch (Exception exception){
             log.error("EmailInfo service exception : {}",exception.getMessage());
         }return email;
     }
-    //without paging
-    public List<EmailInfo> getAll(){
-        List<EmailInfo> emails = new ArrayList<>();
-        try{
-            emails =  emailInfoRepository.findAll();
-        }catch (Exception exception){
-            log.error("EmailInfo service getAll exception: {}", exception.getMessage());
-        }
-        return emails;
-    }
 
-    public EmailInfo get(String id){
-        EmailInfo email = new EmailInfo();
-        try{
-            email = emailInfoRepository.findEmailById(id);
-        }catch (Exception exception){
-            log.error("EmailInfo service get exception: {}", exception.getMessage());
-        }
-        return email;
-    }
-//    public List<EmailInfo> getByReceiver(String receiver){
-//        List<EmailInfo> emails = new ArrayList<>();
-//      try{
-//          emails  = emailInfoRepository.findAllByEmailReceiverAndEmailDateBetween();
-//      }catch (Exception exception){
-//          log.error("EmailInfo service get by receiver exception : {}",exception.getMessage());
-//      }
-//      return emails;
-//    };
-
-    public EmailInfo update( String id, EmailInfo updatedEmail){
-        EmailInfo email = new EmailInfo();
-        try{
-            if (emailInfoRepository.existsById(id)){
-                email = emailInfoRepository.save(updatedEmail);
-                email.setId(id);
-                log.info("Email has been updated");
-            }else {log.info("There is no email with id : {}",id);}
-        }catch (Exception exception){
-            log.error("EmailInfo service update expression : {}",exception.getMessage());
-        }
-        return email;
-    }
     public boolean delete(String id){
         boolean isDeleted = false;
         try{
@@ -146,16 +85,6 @@ public class EmailInfoService {
         }
         return isDeleted;
     }
-    public boolean deleteAll(){
-        boolean isDeleted = false;
-        try {
-            emailInfoRepository.deleteAll();
-            isDeleted = true;
-            log.info("All emails have been deleted.");
-        }catch (Exception exception){
-            log.error("EmailInfo service deleteAll exception : {}",exception.getMessage());
-        }
-        return isDeleted;
-    }
+
 
 }
