@@ -3,7 +3,6 @@ package me.utku.honeynet.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.honeynet.dto.chart.ServerInfoGroupByStatusDTO;
-import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginCountryDTO;
 import me.utku.honeynet.enums.ServerInfoStatus;
 import me.utku.honeynet.model.Pot;
 import me.utku.honeynet.model.ServerInfo;
@@ -109,6 +108,18 @@ public class ServerInfoService {
             log.warn("Pot service sanitize warning: {} -> {}",input,output);
         }
         return output;
+    }
+
+    public void extractJar(String path){
+        try{
+            Runtime.getRuntime()
+                .exec("cmd /c cd "
+                    + sanitize(path)
+                    + "mvn compile & mvn package"
+                );
+        }catch (Exception error){
+            log.error("Server info service extractJar exception: {}",error.getMessage());
+        }
     }
 
     public ServerInfo setup(String potId, String firmId){

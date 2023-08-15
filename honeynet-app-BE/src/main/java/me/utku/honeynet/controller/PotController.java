@@ -1,7 +1,8 @@
 package me.utku.honeynet.controller;
 
 import lombok.RequiredArgsConstructor;
-import me.utku.honeynet.dto.CloneRequest;
+import me.utku.honeynet.dto.clone.CloneRequest;
+import me.utku.honeynet.dto.clone.CloneResponse;
 import me.utku.honeynet.dto.email.EmailListener;
 import me.utku.honeynet.dto.email.EmailSetupRequest;
 import me.utku.honeynet.dto.GenericResponse;
@@ -63,12 +64,12 @@ public class PotController {
     }
 
     @PostMapping("/web-clone")
-    public GenericResponse<Boolean> createEmailListener(
+    public GenericResponse<CloneResponse> createEmailListener(
         @RequestParam String potId,
-        @RequestBody CloneRequest cloneRequest,
-        @AuthenticationPrincipal CustomUserDetails userDetails) {
-        restService.forwardCloneSite(cloneRequest.cloneUrl(), potId, userDetails.getFirmRef());
-        return GenericResponse.<Boolean>builder().data(true).build();
+        @AuthenticationPrincipal CustomUserDetails userDetails,
+        @RequestBody CloneRequest cloneRequest) {
+        CloneResponse cloneResponse = restService.forwardCloneSite(cloneRequest.cloneUrl(), potId, userDetails.getFirmRef());
+        return GenericResponse.<CloneResponse>builder().data(cloneResponse).build();
     }
 
     @PatchMapping("/{id}")

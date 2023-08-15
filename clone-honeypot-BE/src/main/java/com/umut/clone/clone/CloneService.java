@@ -19,8 +19,8 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 @Slf4j
 public class CloneService {
-    private static final String WORKING_DIRECTORY = System.getProperty("user.dir");
-    private static final String TEMPLATES_PATH = "\\src\\main\\resources\\templates\\";
+    private static final String WORKING_DIRECTORY = "C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\clone-honeypot-BE\\";
+    private static final String TEMPLATES_PATH = "src\\main\\resources\\templates\\";
     private static final String FILE_TYPE = ".html";
     private final File indexHtml = new File(WORKING_DIRECTORY+TEMPLATES_PATH+"index"+FILE_TYPE);
     private final HashMap<String,String> routesMap = new HashMap<>();
@@ -30,16 +30,20 @@ public class CloneService {
         clearDirectories();
     }
 
-    public void completeClone(String url){
+    public CloneResponse completeClone(String url){
+        CloneResponse cloneResponse = new CloneResponse("","",false);
         try{
             Document mainDocument = clone(url);
             Elements linkElements = mainDocument.select("a");
             replaceLinks(linkElements);
             write(indexHtml,mainDocument.outerHtml());
             pairPageLinks();
+            cloneResponse = new CloneResponse(url,"Clone completed successfully.",true);
         }catch (Exception error) {
             log.error("Clone pot service completeClone error: {}", error.getMessage());
+            cloneResponse = new CloneResponse(url,"Clone failed.",false);
         }
+        return cloneResponse;
     }
 
     public void replaceLinks(Elements linkElements){

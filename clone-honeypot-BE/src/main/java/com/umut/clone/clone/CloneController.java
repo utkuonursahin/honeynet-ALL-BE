@@ -1,17 +1,20 @@
 package com.umut.clone.clone;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
-@RestController
 @RequestMapping("/clone")
+@RestController
 public class CloneController {
     private final CloneService cloneService;
 
     @PostMapping()
-    public void cloneHtml(@RequestBody CloneRequest cloneRequest) {
+    public CloneResponse cloneHtml(@RequestBody CloneRequest cloneRequest) {
         cloneService.init();
-        cloneService.completeClone(cloneRequest.cloneUrl());
+        return cloneService.completeClone(cloneRequest.cloneUrl());
     }
 }

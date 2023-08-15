@@ -1,6 +1,7 @@
 package me.utku.honeynet.service;
 
 import lombok.extern.slf4j.Slf4j;
+import me.utku.honeynet.dto.clone.CloneResponse;
 import me.utku.honeynet.dto.email.EmailListener;
 import me.utku.honeynet.dto.email.EmailSetupRequest;
 import me.utku.honeynet.model.ServerInfo;
@@ -74,9 +75,9 @@ public class RestService {
         return true;
     }
 
-    public void postCloneSite(String url, Map<String,Object> body, HttpHeaders headers){
+    public CloneResponse postCloneSite(String url, Map<String,Object> body, HttpHeaders headers){
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-        this.restTemplate.postForEntity(url,request, Void.class);
+        return this.restTemplate.exchange(url+"/clone",HttpMethod.POST,request, CloneResponse.class).getBody();
     }
 
     public List<EmailListener> forwardGetAllEmailListeners(String potId,String firmId){
@@ -123,14 +124,17 @@ public class RestService {
         }
     }
 
-    public void forwardCloneSite(String cloneUrl, String potId, String firmId){
+    public CloneResponse forwardCloneSite(String cloneUrl, String potId, String firmId){
         try{
             HttpHeaders headers = generateHeaders();
             Map<String,Object> body = new HashMap<>();
             body.put("cloneUrl", cloneUrl);
-            postCloneSite(findServerUrl(potId,firmId),body,headers);
+            CloneResponse cloneResponse = postCloneSite(findServerUrl(potId,firmId),body,headers);
+            serverInfoService.extractJar("C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\clone-honeypot-BE");
+            return cloneResponse;
         } catch (Exception error){
             log.error("Error while forwarding clone site request: {}", error.getMessage());
+            return null;
         }
     }
 
