@@ -1,11 +1,7 @@
 package com.umut.clone.clone;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -13,10 +9,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class CloneController {
     private final CloneService cloneService;
 
-    @GetMapping()
-    public String cloneHtml(@RequestParam(value = "url",required = true) String url, HttpServletRequest httpServletRequest) {
+    @PostMapping()
+    public void cloneHtml(@RequestBody CloneRequest cloneRequest) {
         cloneService.init();
-        cloneService.completeClone(url);
-        return "OK";
+        cloneService.completeClone(cloneRequest.cloneUrl());
     }
 }

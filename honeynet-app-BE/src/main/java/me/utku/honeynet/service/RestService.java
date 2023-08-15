@@ -74,6 +74,11 @@ public class RestService {
         return true;
     }
 
+    public void postCloneSite(String url, Map<String,Object> body, HttpHeaders headers){
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+        this.restTemplate.postForEntity(url,request, Void.class);
+    }
+
     public List<EmailListener> forwardGetAllEmailListeners(String potId,String firmId){
         List<EmailListener> emailListeners = new ArrayList<>();
         try{
@@ -118,6 +123,17 @@ public class RestService {
         }
     }
 
+    public void forwardCloneSite(String cloneUrl, String potId, String firmId){
+        try{
+            HttpHeaders headers = generateHeaders();
+            Map<String,Object> body = new HashMap<>();
+            body.put("cloneUrl", cloneUrl);
+            postCloneSite(findServerUrl(potId,firmId),body,headers);
+        } catch (Exception error){
+            log.error("Error while forwarding clone site request: {}", error.getMessage());
+        }
+    }
+
     public void shutdownTargetServer(ServerInfo serverInfo){
         try{
             HttpHeaders headers = generateHeaders();
@@ -126,6 +142,5 @@ public class RestService {
         } catch (Exception error){
             log.error("Error while shutting down target server: {}", error.getMessage());
         }
-
     }
 }

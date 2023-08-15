@@ -65,7 +65,7 @@ public class RestService {
         map.put("origin", cloneReach.origin());
         map.put("payload", payload);
         map.put("category", "WEB_CLONE");
-        map.put("potName", "Web Clone");
+        map.put("potName", "Web Clone Pot");
         map.put("date", LocalDateTime.now());
         return map;
     }

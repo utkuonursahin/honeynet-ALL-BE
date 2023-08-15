@@ -11,7 +11,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Pot extends Base {
   private String potName;
   private String description;
-  private String clientUrl;
   private String serverPath;
   private String serverFileName;
   private PotCategory[] category;
