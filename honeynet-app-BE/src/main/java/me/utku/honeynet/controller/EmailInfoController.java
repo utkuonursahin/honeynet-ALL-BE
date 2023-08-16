@@ -16,14 +16,6 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class EmailInfoController {
     private final EmailInfoService emailInfoService;
-
-    @GetMapping
-    public GenericResponse<PaginatedEmailInfos> getAllEmails(@RequestParam(defaultValue = "0") int page,
-                                                             @RequestParam(defaultValue = "20") int size){
-        PaginatedEmailInfos emails = emailInfoService.getAllEmailInfos(page,size);
-        return GenericResponse.<PaginatedEmailInfos>builder().data(emails).statusCode(200).build();
-    }
-
     @PostMapping("/filter")
     public GenericResponse<PaginatedEmailInfos> getAllFilteredEmails(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -35,39 +27,16 @@ public class EmailInfoController {
         return GenericResponse.<PaginatedEmailInfos>builder().data(emailInfos).statusCode(200).build();
     }
 
-
-
-
-    @GetMapping("/{id}")
-    public GenericResponse<EmailInfo> getEmailById(@PathVariable(name = "id") String id){
-        EmailInfo email = emailInfoService.get(id);
-        return GenericResponse.<EmailInfo>builder().data(email).statusCode(200).build();
-    }
-
     @PostMapping
     public GenericResponse<EmailInfo> createEmail(@RequestBody EmailInfo newEmail){
         EmailInfo email = emailInfoService.create(newEmail);
         return GenericResponse.<EmailInfo>builder().data(email).statusCode(200).build();
     }
-
-    @PatchMapping("/{id}")
-    public GenericResponse<EmailInfo> updateEmail(@PathVariable(name = "id") String id,@RequestBody EmailInfo updatedEmail){
-        EmailInfo email = emailInfoService.update(id,updatedEmail);
-        return GenericResponse.<EmailInfo>builder().data(email).statusCode(200).build();
-    }
-
     @DeleteMapping("/{id}")
     public GenericResponse<Boolean> deleteEmail(@PathVariable(name = "id") String id){
         Boolean isDeleted = emailInfoService.delete(id);
         return GenericResponse.<Boolean>builder().data(isDeleted).statusCode(200).build();
     }
-
-    @DeleteMapping
-    public GenericResponse<Boolean> deleteAllEmail(){
-        Boolean isDeleted = emailInfoService.deleteAll();
-        return GenericResponse.<Boolean>builder().data(isDeleted).statusCode(200).build();
-    }
-
 }
 
 

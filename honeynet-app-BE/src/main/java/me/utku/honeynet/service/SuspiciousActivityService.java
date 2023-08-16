@@ -35,7 +35,7 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class    SuspiciousActivityService {
+public class SuspiciousActivityService {
     private final SuspiciousRepository suspiciousRepository;
     private final JWTService jwtService;
     private final MongoTemplate mongoTemplate;
@@ -131,16 +131,7 @@ public class    SuspiciousActivityService {
         return suspiciousActivity;
     }
 
-    public List<SuspiciousActivity> getAllSuspiciousActivities(){
-        List<SuspiciousActivity> suspiciousActivities = new ArrayList<>();
-        try {
-            suspiciousActivities = suspiciousRepository.findAll();
-        }catch (Exception exception){
-            log.error("SuspicioysActivity serrvice getAll exception: {}",exception.getMessage());
-        }
 
-        return suspiciousActivities;
-    }
     private static String renderThymeleafTemplate(String templateName, Map<String,Object> model){
         TemplateEngine templateEngine = new TemplateEngine();
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
@@ -190,10 +181,10 @@ public class    SuspiciousActivityService {
     }
 
     public void sendEmail(SuspiciousActivity newSuspiciousActivity, String to, String sender, String subject, PotCategory potCategory, String potName, Object payload, Date currentDate, EmailInfo email, Origin origin) {
-        String companyName = "BEAM Technology";
-        String address = "ODTU Teknokent Galyum Binası No:D:1";
-        String phoneNumber = "216 55 48";
-        String companyEmail = "cengiz@beam.com";
+        String companyName = email.COMPANY_NAME;
+        String address = email.ADDRESS;
+        String phoneNumber = email.PHONE_NUMBER;
+        String companyEmail = email.COMPANY_EMAIL;
         try{
             Map<String,Object> model = new HashMap<>();
             model.put("to",to);
@@ -208,7 +199,6 @@ public class    SuspiciousActivityService {
             model.put("sourceIP",origin.source());
             String renderedHtml = renderThymeleafTemplate("mail.html",model);
             MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message);
             message.setFrom(sender);
             email.setEmailSender(sender);
             message.setRecipients(MimeMessage.RecipientType.TO,to);
@@ -229,29 +219,26 @@ public class    SuspiciousActivityService {
         }
     }
 
-
-
-
-    public SuspiciousActivity createActivity(SuspiciousActivity newSuspiciousActivity, HttpServletRequest httpServletRequest) {
-        SuspiciousActivity suspiciousActivity = new SuspiciousActivity();
-        EmailInfo email = new EmailInfo();
-        try {
-            String authToken = httpServletRequest.getHeader(TOKEN_HEADER);
-            if(authToken != null && jwtService.validateJWT(authToken)){
-                newSuspiciousActivity.setId(UUID.randomUUID().toString());
-                firmService.get(newSuspiciousActivity.getFirmRef()).getAlertReceivers().forEach(receiver->{
-                    sendEmail(newSuspiciousActivity,receiver,"fakemployeebeam@gmail.com","Alert",newSuspiciousActivity.getCategory(),
-                            newSuspiciousActivity.getPotName(), newSuspiciousActivity.getPayload(), new Date(),
-                            email, newSuspiciousActivity.getOrigin()
-                    );
-                });
-                suspiciousActivity = suspiciousRepository.save(newSuspiciousActivity);
+        public SuspiciousActivity createActivity(SuspiciousActivity newSuspiciousActivity, HttpServletRequest httpServletRequest) {
+            SuspiciousActivity suspiciousActivity = new SuspiciousActivity();
+            EmailInfo email = new EmailInfo();
+            try {
+                String authToken = httpServletRequest.getHeader(TOKEN_HEADER);
+                if(authToken != null && jwtService.validateJWT(authToken)){
+                    newSuspiciousActivity.setId(UUID.randomUUID().toString());
+                    firmService.get(newSuspiciousActivity.getFirmRef()).getAlertReceivers().forEach(receiver->{
+                        sendEmail(newSuspiciousActivity,receiver,"fakemployeebeam@gmail.com","Alert",newSuspiciousActivity.getCategory(),
+                                newSuspiciousActivity.getPotName(), newSuspiciousActivity.getPayload(), new Date(),
+                                email, newSuspiciousActivity.getOrigin()
+                        );
+                    });
+                    suspiciousActivity = suspiciousRepository.save(newSuspiciousActivity);
+                }
+            } catch (Exception error) {
+                log.error("SuspiciousActivity service createActivity exception: {}", error.getMessage());
             }
-        } catch (Exception error) {
-            log.error("SuspiciousActivity service createActivity exception: {}", error.getMessage());
+            return suspiciousActivity;
         }
-        return suspiciousActivity;
-    }
 
     //NOT COMPLETED
     public SuspiciousActivity updateActivity(String id, SuspiciousActivity updatedSuspiciousActivity, HttpServletRequest httpServletRequest ) {
