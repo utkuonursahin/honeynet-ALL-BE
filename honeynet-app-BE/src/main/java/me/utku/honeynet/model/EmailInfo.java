@@ -11,7 +11,7 @@ import java.util.Map;
 @Document
 @Data
 @TypeAlias("Email-Info")
-public class EmailInfo extends Base implements EmailFooterStatics {
+public class EmailInfo extends Base {
     private String emailSender;
     private String emailReceiver;
     private String emailMessage;

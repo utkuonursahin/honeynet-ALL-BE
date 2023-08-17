@@ -8,6 +8,7 @@ import me.utku.honeynet.dto.*;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByCategoryDTO;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginCountryDTO;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginSourceDTO;
+import me.utku.honeynet.dto.email.EmailFooterStatics;
 import me.utku.honeynet.dto.suspiciousActivity.PaginatedSuspiciousActivities;
 import me.utku.honeynet.dto.suspiciousActivity.SuspiciousActivityFilter;
 import me.utku.honeynet.enums.PotCategory;
@@ -181,10 +182,13 @@ public class SuspiciousActivityService {
     }
 
     public void sendEmail(SuspiciousActivity newSuspiciousActivity, String to, String sender, String subject, PotCategory potCategory, String potName, Object payload, Date currentDate, EmailInfo email, Origin origin) {
-        String companyName = email.COMPANY_NAME;
-        String address = email.ADDRESS;
-        String phoneNumber = email.PHONE_NUMBER;
-        String companyEmail = email.COMPANY_EMAIL;
+        EmailFooterStatics emailFooterStatics = new EmailFooterStatics() {};
+        String companyName = emailFooterStatics.COMPANY_NAME;
+        String address = emailFooterStatics.ADDRESS;
+        String phoneNumber = emailFooterStatics.PHONE_NUMBER;
+        String companyEmail = emailFooterStatics.COMPANY_EMAIL;
+
+
         try{
             Map<String,Object> model = new HashMap<>();
             model.put("to",to);
