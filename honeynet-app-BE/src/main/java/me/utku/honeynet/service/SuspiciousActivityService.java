@@ -27,6 +27,7 @@ import org.thymeleaf.context.Context;
 import org.thymeleaf.templatemode.TemplateMode;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -183,6 +184,9 @@ public class SuspiciousActivityService {
         String address = emailFooterStatics.ADDRESS;
         String phoneNumber = emailFooterStatics.PHONE_NUMBER;
         String companyEmail = emailFooterStatics.COMPANY_EMAIL;
+        String pattern = "dd-MM-yyyy | HH:mm:ss";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        String formattedDate = simpleDateFormat.format(currentDate);
         try{
             Map<String,Object> model = new HashMap<>();
             model.put("to",to);
@@ -192,7 +196,7 @@ public class SuspiciousActivityService {
             model.put("companyEmail",companyEmail);
             model.put("attackCategory",potCategory);
             model.put("potName",potName);
-            model.put("date",currentDate);
+            model.put("date",formattedDate);
             model.put("sourceCountry",origin.country());
             model.put("sourceIP",origin.source());
             String renderedHtml = renderThymeleafTemplate("mail.html",model);
