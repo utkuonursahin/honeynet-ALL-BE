@@ -110,39 +110,6 @@ public class ServerInfoService {
         return output;
     }
 
-    public void extractJar(String path){
-        try{
-            Runtime.getRuntime()
-                .exec("cmd /c cd "
-                    + sanitize(path)
-                    + "mvn compile & mvn package"
-                );
-        }catch (Exception error){
-            log.error("Server info service extractJar exception: {}",error.getMessage());
-        }
-    }
-
-    public ServerInfo setup(String potId, String firmId){
-        ServerInfo serverInfo = new ServerInfo();
-        try{
-            Pot pot = potService.get(potId);
-            if(pot == null) throw new Exception("No pot found with given id");
-            serverInfo = create(potId,firmId);
-            Runtime.getRuntime()
-                .exec("cmd /c cd "
-                    + sanitize(pot.getServerPath())
-                    + " & start java -jar "
-                    + sanitize(pot.getServerFileName())
-                    + " --be.id="+sanitize(serverInfo.getId())
-                    + " --be.firmId="+sanitize(serverInfo.getFirmRef())
-                    + " --server.port="+sanitize(serverInfo.getPort())
-                );
-        }catch (Exception error){
-            log.error("Server info service setup exception: {}",error.getMessage());
-        }
-        return serverInfo;
-    }
-
     public ServerInfo create(String potId, String firmId){
         ServerInfo serverInfo = new ServerInfo();
         try{
@@ -190,6 +157,43 @@ public class ServerInfoService {
         } catch (Exception exception){
             log.error("ServerInfo service delete exception: {}",exception.getMessage());
         }
+    }
+
+    public void extractJar(String path){
+        Process process;
+        try{
+            process = Runtime.getRuntime()
+                .exec("cmd /c cd "
+                    + sanitize(path)
+                    + " & mvnw.cmd clean install"
+                );
+            process.waitFor();
+        }catch (Exception error){
+            log.error("Server info service extractJar exception: {}",error.getMessage());
+        }
+    }
+
+    public ServerInfo setup(String potId, String firmId){
+        ServerInfo serverInfo = new ServerInfo();
+        Process process;
+        try{
+            Pot pot = potService.get(potId);
+            if(pot == null) throw new Exception("No pot found with given id");
+            serverInfo = create(potId,firmId);
+            process = Runtime.getRuntime()
+                .exec("cmd /c cd "
+                    + sanitize(pot.getServerPath())
+                    + " & start java -jar "
+                    + sanitize(pot.getServerFileName())
+                    + " --be.id="+sanitize(serverInfo.getId())
+                    + " --be.firmId="+sanitize(serverInfo.getFirmRef())
+                    + " --server.port="+sanitize(serverInfo.getPort())
+                );
+            process.waitFor();
+        }catch (Exception error){
+            log.error("Server info service setup exception: {}",error.getMessage());
+        }
+        return serverInfo;
     }
 
     public ServerInfo shutdown(String id){

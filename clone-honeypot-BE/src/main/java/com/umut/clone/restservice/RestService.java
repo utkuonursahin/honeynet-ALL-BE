@@ -85,5 +85,9 @@ public class RestService {
             log.error("Error while posting suspicious activity: {}", error.getMessage());
         }
     }
+
+    public Boolean sendShutdownNotification(){
+        return true;
+    }
 }
 

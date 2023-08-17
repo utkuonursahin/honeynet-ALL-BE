@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.umut</groupId>
-    <artifactId>Clone</artifactId>
+    <artifactId>clone-honeypot-BE</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>Clone</name>
     <description>Clone</description>

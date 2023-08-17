@@ -130,7 +130,11 @@ public class RestService {
             Map<String,Object> body = new HashMap<>();
             body.put("cloneUrl", cloneUrl);
             CloneResponse cloneResponse = postCloneSite(findServerUrl(potId,firmId),body,headers);
+            ServerInfo serverInfo = serverInfoService.getByPotIdAndFirmId(potId,firmId);
+            serverInfoService.shutdown(serverInfo.getId());
+            Thread.sleep(100);
             serverInfoService.extractJar("C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\clone-honeypot-BE");
+            serverInfoService.start(serverInfo.getId());
             return cloneResponse;
         } catch (Exception error){
             log.error("Error while forwarding clone site request: {}", error.getMessage());
