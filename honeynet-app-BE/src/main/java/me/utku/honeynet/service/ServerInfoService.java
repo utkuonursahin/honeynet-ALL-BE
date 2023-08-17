@@ -3,7 +3,6 @@ package me.utku.honeynet.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.utku.honeynet.dto.chart.ServerInfoGroupByStatusDTO;
-import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginCountryDTO;
 import me.utku.honeynet.enums.ServerInfoStatus;
 import me.utku.honeynet.model.Pot;
 import me.utku.honeynet.model.ServerInfo;
@@ -33,25 +32,31 @@ public class ServerInfoService {
     @Lazy
     private final RestService restService;
 
+    //SHOULD BE DELETED --
     public List<ServerInfo> getAll(){
         List<ServerInfo> serverInfos = null;
         try{
             serverInfos = serverInfoRepository.findAll();
         } catch (Exception exception){
-            log.error("ServerInfo service getAll exception: {}",exception.getMessage());
+            log.error("Exception occurs in get all operation of ServerInfoService : {}",exception.getMessage());
         }
         return serverInfos;
     }
+    // --
 
     public List<ServerInfo> getAllByFirmRef(String firmId){
         List<ServerInfo> serverInfos = null;
         try{
             serverInfos = serverInfoRepository.findAllByFirmRef(firmId);
-            serverInfos.forEach(serverInfo -> {
-                serverInfo.setPotRef(potService.get(serverInfo.getPotRef()).getPotName());
-            });
+            if (serverInfos != null){
+                serverInfos.forEach(serverInfo -> {
+                    serverInfo.setPotRef(potService.get(serverInfo.getPotRef()).getPotName());
+                });
+            }else{
+                throw new Exception("There is no server with given firmId");
+            }
         } catch (Exception exception){
-            log.error("ServerInfo service getAll exception: {}",exception.getMessage());
+            log.error("Exception occurs in get all by firm ref operation of ServerInfoService: {}",exception.getMessage());
         }
         return serverInfos;
     }
@@ -61,7 +66,7 @@ public class ServerInfoService {
         try{
             serverInfo = serverInfoRepository.findById(id).orElseThrow();
         } catch (Exception exception){
-            log.error("ServerInfo service get exception: {}",exception.getMessage());
+            log.error("Exception occurs in get operation of ServerInfoService : {}",exception.getMessage());
         }
         return serverInfo;
     }
@@ -76,7 +81,7 @@ public class ServerInfoService {
             AggregationResults<ServerInfoGroupByStatusDTO> results = mongoTemplate.aggregate(aggregation, "serverInfo", ServerInfoGroupByStatusDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
-            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByCategory exception: {}", error.getMessage());
+            log.error("Exception occurs in groupAndCountServerInfoByStatus operation of ServerInfoService : {}", error.getMessage());
             return null;
         }
     }
@@ -94,13 +99,18 @@ public class ServerInfoService {
             } while (isReserved);
             return port;
         } catch (Exception exception){
-            log.error("ServerInfo service findAvailablePort exception: {}",exception.getMessage());
+            log.error("Exception occurs in findAvailablePort of ServerInfoService : {}",exception.getMessage());
             return 0;
         }
     }
 
     public ServerInfo getByPotIdAndFirmId(String potId,String firmId){
-        return serverInfoRepository.findByPotRefAndFirmRef(potId,firmId);
+        try{
+            return serverInfoRepository.findByPotRefAndFirmRef(potId,firmId);
+        }catch (Exception exception){
+            log.error("Exception occurs in getByPotIdAndFirmId of ServerInfoService : {}",exception.getMessage());
+            return null;
+        }
     }
 
     public String sanitize(String input){
@@ -127,7 +137,7 @@ public class ServerInfoService {
                     + " --server.port="+sanitize(serverInfo.getPort())
                 );
         }catch (Exception error){
-            log.error("Server info service setup exception: {}",error.getMessage());
+            log.error("Exception occurs in setup operation of ServerInfoService : {}",error.getMessage());
         }
         return serverInfo;
     }
@@ -155,8 +165,9 @@ public class ServerInfoService {
                     .setStatus(ServerInfoStatus.RUN);
                 serverInfo = serverInfoRepository.save(serverInfo);
             }
+            log.info("New Server has been created");
         }catch(Exception exception){
-            log.error("ServerInfo service create exception: {}",exception.getMessage());
+            log.error("Exception occurs during the creation of Server : {}",exception.getMessage());
         }
         return serverInfo;
     }
@@ -167,17 +178,22 @@ public class ServerInfoService {
         try{
             serverInfo = serverInfoRepository.findById(id).orElseThrow();
             serverInfo = serverInfoRepository.save(serverInfo);
+            log.info("{} has been updated with ID : {}",potService.get(serverInfo.getPotRef()).getPotName(), id);
+
         } catch (Exception exception){
-            log.error("ServerInfo service update exception: {}",exception.getMessage());
+            log.error("Exception occurs in update operation of ServerInfoService : {}",exception.getMessage());
         }
         return serverInfo;
     }
 
     public void delete(String id){
+        ServerInfo serverInfo = null;
         try{
+            serverInfo = serverInfoRepository.findById(id).orElseThrow();
             serverInfoRepository.deleteById(id);
+            log.info("{} has been deleted successfully with ID : {}",potService.get(serverInfo.getPotRef()).getPotName(),id);
         } catch (Exception exception){
-            log.error("ServerInfo service delete exception: {}",exception.getMessage());
+            log.error("Exception occurs in delete operation of ServerInfoService : {}",exception.getMessage());
         }
     }
 
@@ -188,8 +204,9 @@ public class ServerInfoService {
             serverInfo.setStatus(ServerInfoStatus.SHUTDOWN);
             serverInfo = serverInfoRepository.save(serverInfo);
             restService.shutdownTargetServer(serverInfo);
+            log.info("{} has been shut down on port : {}",potService.get(serverInfo.getPotRef()).getPotName(),serverInfo.getPort());
         } catch (Exception exception){
-            log.error("ServerInfo service shutdown exception: {}",exception.getMessage());
+            log.error("Exception occurs during shutdown in ServerInfoService : {}",exception.getMessage());
         }
         return serverInfo;
     }
@@ -202,8 +219,9 @@ public class ServerInfoService {
             serverInfo = setup(serverInfo.getPotRef(),serverInfo.getFirmRef());
             serverInfo.setStatus(ServerInfoStatus.RUN);
             serverInfo = serverInfoRepository.save(serverInfo);
+            log.info("{} has been initialized on port : {}",potService.get(serverInfo.getPotRef()).getPotName(),serverInfo.getPort());
         } catch (Exception error){
-            log.error("ServerInfo service start exception: {}",error.getMessage());
+            log.error("Exception occurs in start operation of ServerInfoService : {}",error.getMessage());
         }
         return serverInfo;
     }
@@ -213,8 +231,9 @@ public class ServerInfoService {
             ServerInfo serverInfo = serverInfoRepository.findById(id).orElseThrow();
             restService.shutdownTargetServer(serverInfo);
             serverInfoRepository.deleteById(id);
+            log.info("{} has been terminated from port : {} ",potService.get(serverInfo.getPotRef()).getPotName(), serverInfo.getPort());
         } catch (Exception exception){
-            log.error("ServerInfo service terminate exception: {}",exception.getMessage());
+            log.error("Exception occurs in terminate operation of ServerInfoService : {}",exception.getMessage());
         }
     }
 }

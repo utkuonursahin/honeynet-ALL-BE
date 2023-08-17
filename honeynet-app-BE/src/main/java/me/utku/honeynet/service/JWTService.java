@@ -17,16 +17,13 @@ public class JWTService {
     public String generateJWT() throws JoseException {
         byte[] key = "f5ceea00600987dee67e0206b53ad9b42155bc7c038f8dc4e04550b205180d87".getBytes();
         HmacKey hmacKey = new HmacKey(key);
-
         JwtClaims jwtClaims = new JwtClaims();
         jwtClaims.setIssuedAtToNow();
         jwtClaims.setExpirationTimeMinutesInTheFuture(10080);
-
         JsonWebSignature jws = new JsonWebSignature();
         jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.HMAC_SHA256);
         jws.setKey(hmacKey);
         jws.setPayload(jwtClaims.toJson());
-
         String jwt = jws.getCompactSerialization();
         return jwt;
     }
@@ -34,11 +31,9 @@ public class JWTService {
     public boolean validateJWT(String jwt) {
         byte[] key = "f5ceea00600987dee67e0206b53ad9b42155bc7c038f8dc4e04550b205180d87".getBytes();
         HmacKey hmacKey = new HmacKey(key);
-
         JwtConsumer jwtConsumer = new JwtConsumerBuilder()
             .setRequireIssuedAt().setRequireExpirationTime()
             .setVerificationKey(hmacKey).build();
-
         try{
             jwtConsumer.processToClaims(jwt);
             return true;

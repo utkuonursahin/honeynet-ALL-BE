@@ -10,11 +10,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDateTime;
 import java.time.Month;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -43,7 +40,7 @@ public class EmailInfoService {
             if (emailInfoFilter.getReceiverFilter() == null){
                 emailInfoFilter.setReceiverFilter("mcayhan6006@gmail.com");
             }
-            System.out.println(emailInfoFilter);
+            log.info("Filter applied as => {}",emailInfoFilter);
             Pageable pageable = PageRequest.of(page,size);
             Page<EmailInfo> emailInfos = null;
             emailInfos = emailInfoRepository.findAllByEmailReceiverContainsAndEmailDateBetween(
@@ -53,10 +50,8 @@ public class EmailInfoService {
                     pageable
             );
             return createPaginatedEmailInfos(emailInfos, page, size);
-
-
         }catch (Exception exception){
-            log.error("EmailInfo service filterEmails exception: {}", exception.getMessage());
+            log.error("Exception occurs in filter operation of EmailInfoService : {}", exception.getMessage());
         }
         return null;
     }
@@ -66,9 +61,9 @@ public class EmailInfoService {
         try {
             emailInfo.setId(UUID.randomUUID().toString());
             email = emailInfoRepository.save(emailInfo);
-            log.info("New email has created.");
+            log.info("New email has been created with ID : {}", emailInfo.getId());
         }catch (Exception exception){
-            log.error("EmailInfo service exception : {}",exception.getMessage());
+            log.error("Exception occurs in create operation of EmailInfoService : {}",exception.getMessage());
         }return email;
     }
 
@@ -77,11 +72,11 @@ public class EmailInfoService {
         try{
             if (emailInfoRepository.existsById(id)){
                 emailInfoRepository.deleteById(id);
-                log.info("Email with id : {} deleted",id);
+                log.info("Email with id : {} has been deleted",id);
                 isDeleted = true;
-            }else log.info("Email with id : {} couldn't find", id);
+            }else log.info("Email with id : {} cannot be found", id);
         }catch (Exception exception){
-            log.error("EmailInfo service deleteById exception : {}",exception.getMessage());
+            log.error("Exception occurs in delete operation of EmailInfoService: {}",exception.getMessage());
         }
         return isDeleted;
     }

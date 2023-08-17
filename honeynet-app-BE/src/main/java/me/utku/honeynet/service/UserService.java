@@ -34,17 +34,21 @@ public class UserService implements UserDetailsService {
         try {
             users = userRepository.findAll();
         } catch (Exception exception) {
-            log.error("User service getAll exception: {}", exception.getMessage());
+            log.error("Exception occurs in get all operation of UserService : {}", exception.getMessage());
         }
         return users;
     }
 
     private UserResponseDTO generateUserResponseDTO(User user){
         UserResponseDTO userResponseDTO = null;
-        if (user.getFirmRef() != null)
-            userResponseDTO = new UserResponseDTO(user.getId(), user.getUsername(), user.getEmail(), user.getRole(), user.getFirmRef(), firmService.get(user.getFirmRef()).getFirmName());
-        else
-            userResponseDTO = new UserResponseDTO(user.getId(), user.getUsername(), user.getEmail(), user.getRole(), null, null);
+        try{
+            if (user.getFirmRef() != null)
+                userResponseDTO = new UserResponseDTO(user.getId(), user.getUsername(), user.getEmail(), user.getRole(), user.getFirmRef(), firmService.get(user.getFirmRef()).getFirmName());
+            else
+                userResponseDTO = new UserResponseDTO(user.getId(), user.getUsername(), user.getEmail(), user.getRole(), null, null);
+        }catch (Exception exception){
+            log.error("Exception occurs in generateUserResponseDTO operation of UserService : {}", exception.getMessage());
+        }
         return userResponseDTO;
     }
 
@@ -55,7 +59,7 @@ public class UserService implements UserDetailsService {
             if (user == null) throw new Exception("No user found with that id!");
             userResponseDTO = generateUserResponseDTO(user);
         } catch (Exception exception) {
-            log.error("User service getMe exception: {}", exception.getMessage());
+            log.error("Error occurs in get operation of UserService : {}", exception.getMessage());
         }
         return userResponseDTO;
     }
@@ -64,10 +68,10 @@ public class UserService implements UserDetailsService {
         UserResponseDTO userResponseDTO = null;
         try {
             User user = userRepository.findFirstByFirmRef(firmId);
-            if (user == null) throw new Exception("No user found with that firm id!");
+            if (user == null) throw new Exception("There is no user with that firm ID");
             userResponseDTO = generateUserResponseDTO(user);
         } catch (Exception exception) {
-            log.error("User service getByFirm exception: {}", exception.getMessage());
+            log.error("Exception occurs in get by firm operation of UserService : {}", exception.getMessage());
         }
         return userResponseDTO;
     }
@@ -79,8 +83,9 @@ public class UserService implements UserDetailsService {
             newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
             User user = userRepository.save(newUser);
             userResponseDTO = generateUserResponseDTO(user);
+            log.info("UserResponseDTO has been created successfully");
         } catch (Exception exception) {
-            log.error("User service create exception: {}", exception.getMessage());
+            log.error("Exception occurs in create operation of UserService : {}", exception.getMessage());
         }
         return userResponseDTO;
     }
@@ -102,8 +107,9 @@ public class UserService implements UserDetailsService {
             if (userUpdateDTO.email() != null) existingUser.setEmail(userUpdateDTO.email());
             existingUser = userRepository.save(existingUser);
             userResponseDTO = generateUserResponseDTO(existingUser);
+            log.info("User has been updated successfully with ID : {}", id);
         } catch (Exception exception) {
-            log.error("User service update exception: {}", exception.getMessage());
+            log.error("Exception occurs in update operation of UserService : {}", exception.getMessage());
             return new UserUpdateResponseDTO(401, exception.getMessage(), userResponseDTO);
         }
         return new UserUpdateResponseDTO(200, "User updated successfully!", userResponseDTO);
@@ -114,8 +120,9 @@ public class UserService implements UserDetailsService {
         try {
             userRepository.deleteById(id);
             result = true;
+            log.info("Selected User has been deleted successfully with ID : {}", id);
         } catch (Exception exception) {
-            log.error("User service delete exception: {}", exception.getMessage());
+            log.error("Exception occurs in delete operation of UserService : {}", exception.getMessage());
         }
         return result;
     }
@@ -124,7 +131,7 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email);
         if (user == null) {
-            throw new UsernameNotFoundException("Could not find user");
+            throw new UsernameNotFoundException("Could not find the user");
         }
         return new CustomUserDetails(
             user.getId(),

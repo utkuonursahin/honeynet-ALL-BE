@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
+//LOG EKLENECEK
 @Service
 @Slf4j
 public class RestService {

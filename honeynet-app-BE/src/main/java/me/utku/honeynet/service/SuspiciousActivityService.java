@@ -87,7 +87,7 @@ public class SuspiciousActivityService {
             AggregationResults<SuspiciousActivityGroupByCategoryDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByCategoryDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
-            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByCategory exception: {}", error.getMessage());
+            log.error("Exception occurs in groupAndCountSuspiciousActivitiesByCategory operation of SuspiciousActivityService : {}", error.getMessage());
             return null;
         }
     }
@@ -102,7 +102,7 @@ public class SuspiciousActivityService {
             AggregationResults<SuspiciousActivityGroupByOriginSourceDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByOriginSourceDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
-            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByOriginSource exception: {}", error.getMessage());
+            log.error("Exception occurs in groupAndCountSuspiciousActivitiesByOriginSource operation of SuspiciousActivityService : {}", error.getMessage());
             return null;
         }
     }
@@ -117,7 +117,7 @@ public class SuspiciousActivityService {
             AggregationResults<SuspiciousActivityGroupByOriginCountryDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByOriginCountryDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
-            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByOriginCountry exception: {}", error.getMessage());
+            log.error("Exception occurs in groupAndCountSuspiciousActivitiesByOriginCountry operation of SuspiciousActivityService: {}", error.getMessage());
             return null;
         }
     }
@@ -127,7 +127,7 @@ public class SuspiciousActivityService {
         try {
             suspiciousActivity = suspiciousRepository.findById(id).orElse(null);
         } catch (Exception error) {
-            log.error("SuspiciousActivity service getActivityById exception: {}", error.getMessage());
+            log.error("Exception occurs in get activity by ID operation of SuspicioysActivityService : {}", error.getMessage());
         }
         return suspiciousActivity;
     }
@@ -141,14 +141,10 @@ public class SuspiciousActivityService {
         templateResolver.setTemplateMode(TemplateMode.HTML);
         templateResolver.setCharacterEncoding("UTF-8");
         templateEngine.setTemplateResolver(templateResolver);
-
         Context context = new Context();
         context.setVariables(model);
-
         return templateEngine.process(templateName, context);
     }
-
-
 
     public PaginatedSuspiciousActivities filterActivities(String firmRef, SuspiciousActivityFilter suspiciousActivityFilter, int page, int size){
         try {
@@ -176,7 +172,7 @@ public class SuspiciousActivityService {
             );
             return createPaginatedSuspiciousActivity(activities,page,size);
         } catch (Exception error) {
-            log.error("SuspiciousActivity service filterActivities exception: {}", error.getMessage());
+            log.error("Exception occurs in filterActivities operation of SuspiciousActivityService : {}", error.getMessage());
             return null;
         }
     }
@@ -187,8 +183,6 @@ public class SuspiciousActivityService {
         String address = emailFooterStatics.ADDRESS;
         String phoneNumber = emailFooterStatics.PHONE_NUMBER;
         String companyEmail = emailFooterStatics.COMPANY_EMAIL;
-
-
         try{
             Map<String,Object> model = new HashMap<>();
             model.put("to",to);
@@ -219,7 +213,7 @@ public class SuspiciousActivityService {
 
 
         }catch (Exception exception){
-            log.error("EmailSenderService sendEmail exception {}", exception.getMessage());
+            log.error("Exception occurs in send email operation of SuspiciousActivityService : {}", exception.getMessage());
         }
     }
 
@@ -237,9 +231,10 @@ public class SuspiciousActivityService {
                         );
                     });
                     suspiciousActivity = suspiciousRepository.save(newSuspiciousActivity);
+                    log.info("New Suspicious Activity successfully noted as {} attack with ID : {}", newSuspiciousActivity.getCategory(),newSuspiciousActivity.getId());
                 }
             } catch (Exception error) {
-                log.error("SuspiciousActivity service createActivity exception: {}", error.getMessage());
+                log.error("Exception occurs in create activity operation of SupiciousActivityService : {}", error.getMessage());
             }
             return suspiciousActivity;
         }
@@ -257,9 +252,10 @@ public class SuspiciousActivityService {
                 if(updatedSuspiciousActivity.getOrigin() != null)
                     existingSuspiciousActivity.setOrigin(updatedSuspiciousActivity.getOrigin());
                 suspiciousRepository.save(existingSuspiciousActivity);
+                log.info("Selected suspicious activity has been updated successfully with ID : {}",id);
             }
         } catch (Exception error) {
-            log.error("SuspiciousActivity service updateActivity exception: {}", error.getMessage());
+            log.error("Exception occurs in update operation of SuspiciousActivityService : {}", error.getMessage());
         }
         return existingSuspiciousActivity;
     }
@@ -272,10 +268,10 @@ public class SuspiciousActivityService {
             if(authToken != null && jwtService.validateJWT(authToken)){
                 suspiciousRepository.deleteById(id);
                 isDeleted = true;
-                log.info("SuspiciousActivity with id: {} deleted by {}", id, origin);
+                log.info("SuspiciousActivity with id: {} has deleted by {}", id, origin);
             }
         } catch (Exception error) {
-            log.error("SuspiciousActivity service deleteActivity exception: {}", error.getMessage());
+            log.error("Exception occurs in delete operation of SuspiciousActivityService : {}", error.getMessage());
         }
         return isDeleted;
     }

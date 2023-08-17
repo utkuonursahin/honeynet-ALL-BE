@@ -25,7 +25,7 @@ public class FirmService {
         try{
             firms = firmRepository.findAll();
         }catch (Exception exception) {
-            log.error("Firm service getAll exception: {}", exception.getMessage());
+            log.error("Exception occurs in get all operation of FirmService : {}", exception.getMessage());
         }
         return firms;
     }
@@ -35,7 +35,7 @@ public class FirmService {
         try{
             firm = firmRepository.findById(id).orElse(null);
         }catch (Exception error){
-            log.error("Firm service get exception: {}", error.getMessage());
+            log.error("Exception occurs in get operation of FirmService: {}", error.getMessage());
         }
         return firm;
     }
@@ -44,14 +44,14 @@ public class FirmService {
         byte[] image = null;
         try{
             Firm firm =firmRepository.findById(id).orElse(null);
-            if(firm == null) throw new Exception("No user found with given id");
+            if(firm == null) throw new Exception("There is no user with given ID");
             String imagePath = firm.getPreviewImgPath();
             Path path = Paths.get(imagePath);
             if(Files.exists(path)){
                 image = Files.readAllBytes(path);
             }
         }catch (Exception error){
-            log.error("Pot service getImage exception: {}",error.getMessage());
+            log.error("Exception occurs in get image operation of FirmService: {}",error.getMessage());
         }
         return image;
     }
@@ -61,8 +61,9 @@ public class FirmService {
         try{
             newFirm.setId(UUID.randomUUID().toString());
             firm = firmRepository.save(newFirm);
+            log.info("Firm successfully created as {} with ID : {}",firm.getFirmName(),firm.getId());
         }catch (Exception error){
-            log.error("Firm service create exception: {}", error.getMessage());
+            log.error("Exception occurs in create operation of FirmService : {}", error.getMessage());
         }
         return firm;
     }
@@ -72,19 +73,23 @@ public class FirmService {
         Firm firm = new Firm();
         try{
             firm = firmRepository.save(updatedFirm);
+            log.info("Firm with name {} and ID : {} has been updated",firm.getFirmName(),firm.getId());
         }catch (Exception error){
-            log.error("Firm service create exception: {}", error.getMessage());
+            log.error("Exception occurs in update operation of FirmService: {}", error.getMessage());
         }
         return firm;
     }
 
     public boolean delete(String id){
         boolean result = false;
+        Firm firm;
         try{
+            firm = firmRepository.findById(id).orElseThrow();
             firmRepository.deleteById(id);
             result = true;
+            log.info("Firm named {} has been deleted",firm.getFirmName());
         }catch (Exception error){
-            log.error("Firm service delete exception: {}", error.getMessage());
+            log.error("Exception occurs in delete operation of FirmService: {}", error.getMessage());
         }
         return result;
     }
