@@ -1,5 +1,6 @@
 package me.utku.honeynet.service;
 
+import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -7,17 +8,25 @@ import me.utku.honeynet.dto.*;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByCategoryDTO;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginCountryDTO;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginSourceDTO;
+import me.utku.honeynet.dto.email.EmailFooterStatics;
 import me.utku.honeynet.dto.suspiciousActivity.PaginatedSuspiciousActivities;
 import me.utku.honeynet.dto.suspiciousActivity.SuspiciousActivityFilter;
 import me.utku.honeynet.enums.PotCategory;
+import me.utku.honeynet.model.EmailInfo;
 import me.utku.honeynet.model.SuspiciousActivity;
 import me.utku.honeynet.repository.SuspiciousRepository;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.*;
 import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.templatemode.TemplateMode;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -32,6 +41,9 @@ public class SuspiciousActivityService {
     private final JWTService jwtService;
     private final MongoTemplate mongoTemplate;
     private static final String TOKEN_HEADER = "In-App-Auth-Token";
+    private final EmailInfoService emailInfoService;
+    private final JavaMailSender mailSender;
+    private final FirmService firmService;
 
     public PaginatedSuspiciousActivities createPaginatedSuspiciousActivity(Page<SuspiciousActivity> activities, int page, int size){
         PaginatedSuspiciousActivities paginatedSuspiciousActivities = new PaginatedSuspiciousActivities();
@@ -74,7 +86,7 @@ public class SuspiciousActivityService {
             AggregationResults<SuspiciousActivityGroupByCategoryDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByCategoryDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
-            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByCategory exception: {}", error.getMessage());
+            log.error("Exception occurs in groupAndCountSuspiciousActivitiesByCategory operation of SuspiciousActivityService : {}", error.getMessage());
             return null;
         }
     }
@@ -89,7 +101,7 @@ public class SuspiciousActivityService {
             AggregationResults<SuspiciousActivityGroupByOriginSourceDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByOriginSourceDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
-            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByOriginSource exception: {}", error.getMessage());
+            log.error("Exception occurs in groupAndCountSuspiciousActivitiesByOriginSource operation of SuspiciousActivityService : {}", error.getMessage());
             return null;
         }
     }
@@ -104,7 +116,7 @@ public class SuspiciousActivityService {
             AggregationResults<SuspiciousActivityGroupByOriginCountryDTO> results = mongoTemplate.aggregate(aggregation, "suspiciousActivity", SuspiciousActivityGroupByOriginCountryDTO.class);
             return results.getMappedResults();
         } catch (Exception error) {
-            log.error("SuspiciousActivity service groupAndCountSuspiciousActivitiesByOriginCountry exception: {}", error.getMessage());
+            log.error("Exception occurs in groupAndCountSuspiciousActivitiesByOriginCountry operation of SuspiciousActivityService: {}", error.getMessage());
             return null;
         }
     }
@@ -114,10 +126,23 @@ public class SuspiciousActivityService {
         try {
             suspiciousActivity = suspiciousRepository.findById(id).orElse(null);
         } catch (Exception error) {
-            log.error("SuspiciousActivity service getActivityById exception: {}", error.getMessage());
+            log.error("Exception occurs in get activity by ID operation of SuspicioysActivityService : {}", error.getMessage());
         }
         return suspiciousActivity;
     }
+    private static String renderThymeleafTemplate(String templateName, Map<String,Object> model){
+        TemplateEngine templateEngine = new TemplateEngine();
+        ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+        templateResolver.setPrefix("templates/");
+        templateResolver.setSuffix(".html");
+        templateResolver.setTemplateMode(TemplateMode.HTML);
+        templateResolver.setCharacterEncoding("UTF-8");
+        templateEngine.setTemplateResolver(templateResolver);
+        Context context = new Context();
+        context.setVariables(model);
+        return templateEngine.process(templateName, context);
+    }
+
 
     public PaginatedSuspiciousActivities filterActivities(String firmRef, SuspiciousActivityFilter suspiciousActivityFilter, int page, int size){
         try {
@@ -145,21 +170,73 @@ public class SuspiciousActivityService {
             );
             return createPaginatedSuspiciousActivity(activities,page,size);
         } catch (Exception error) {
-            log.error("SuspiciousActivity service filterActivities exception: {}", error.getMessage());
+            log.error("Exception occurs in filterActivities operation of SuspiciousActivityService : {}", error.getMessage());
             return null;
+        }
+    }
+
+
+    public void sendEmail(SuspiciousActivity newSuspiciousActivity, String to, String sender, String subject, PotCategory potCategory, String potName, Object payload, Date currentDate, EmailInfo email, Origin origin) {
+        EmailFooterStatics emailFooterStatics = new EmailFooterStatics() {};
+        String companyName = emailFooterStatics.COMPANY_NAME;
+        String address = emailFooterStatics.ADDRESS;
+        String phoneNumber = emailFooterStatics.PHONE_NUMBER;
+        String companyEmail = emailFooterStatics.COMPANY_EMAIL;
+        String pattern = "dd-MM-yyyy | HH:mm:ss";
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
+        String formattedDate = simpleDateFormat.format(currentDate);
+        try{
+            Map<String,Object> model = new HashMap<>();
+            model.put("to",to);
+            model.put("companyName",companyName);
+            model.put("address",address);
+            model.put("phoneNumber",phoneNumber);
+            model.put("companyEmail",companyEmail);
+            model.put("attackCategory",potCategory);
+            model.put("potName",potName);
+            model.put("date",formattedDate);
+            model.put("sourceCountry",origin.country());
+            model.put("sourceIP",origin.source());
+            String renderedHtml = renderThymeleafTemplate("mail.html",model);
+            MimeMessage message = mailSender.createMimeMessage();
+            message.setFrom(sender);
+            email.setEmailSender(sender);
+            message.setRecipients(MimeMessage.RecipientType.TO,to);
+            email.setEmailReceiver(to);
+            message.setSubject(subject);
+            email.setEmailSubject(subject);
+            message.setContent(renderedHtml,"text/html;charset=utf-8");
+            message.setSentDate(currentDate);
+            email.setEmailDate(currentDate);
+            email.setEmailMessage(String.valueOf(message));
+            email.setSuspiciousActivityRef(newSuspiciousActivity.getId());
+            emailInfoService.create(email);
+            mailSender.send(message);
+
+
+        }catch (Exception exception){
+            log.error("Exception occurs in send email operation of SuspiciousActivityService : {}", exception.getMessage());
         }
     }
 
     public SuspiciousActivity createActivity(SuspiciousActivity newSuspiciousActivity, HttpServletRequest httpServletRequest) {
         SuspiciousActivity suspiciousActivity = new SuspiciousActivity();
+        EmailInfo email = new EmailInfo();
         try {
             String authToken = httpServletRequest.getHeader(TOKEN_HEADER);
             if(authToken != null && jwtService.validateJWT(authToken)){
                 newSuspiciousActivity.setId(UUID.randomUUID().toString());
+                firmService.get(newSuspiciousActivity.getFirmRef()).getAlertReceivers().forEach(receiver->{
+                    sendEmail(newSuspiciousActivity,receiver,"fakemployeebeam@gmail.com","Alert",newSuspiciousActivity.getCategory(),
+                            newSuspiciousActivity.getPotName(), newSuspiciousActivity.getPayload(), new Date(),
+                            email, newSuspiciousActivity.getOrigin()
+                    );
+                });
                 suspiciousActivity = suspiciousRepository.save(newSuspiciousActivity);
+                log.info("New Suspicious Activity successfully noted as {} attack with ID : {}", newSuspiciousActivity.getCategory(),newSuspiciousActivity.getId());
             }
         } catch (Exception error) {
-            log.error("SuspiciousActivity service createActivity exception: {}", error.getMessage());
+            log.error("Exception occurs in create activity operation of SupiciousActivityService : {}", error.getMessage());
         }
         return suspiciousActivity;
     }
@@ -177,9 +254,10 @@ public class SuspiciousActivityService {
                 if(updatedSuspiciousActivity.getOrigin() != null)
                     existingSuspiciousActivity.setOrigin(updatedSuspiciousActivity.getOrigin());
                 suspiciousRepository.save(existingSuspiciousActivity);
+                log.info("Selected suspicious activity has been updated successfully with ID : {}",id);
             }
         } catch (Exception error) {
-            log.error("SuspiciousActivity service updateActivity exception: {}", error.getMessage());
+            log.error("Exception occurs in update operation of SuspiciousActivityService : {}", error.getMessage());
         }
         return existingSuspiciousActivity;
     }
@@ -192,10 +270,10 @@ public class SuspiciousActivityService {
             if(authToken != null && jwtService.validateJWT(authToken)){
                 suspiciousRepository.deleteById(id);
                 isDeleted = true;
-                log.info("SuspiciousActivity with id: {} deleted by {}", id, origin);
+                log.info("SuspiciousActivity with id: {} has deleted by {}", id, origin);
             }
         } catch (Exception error) {
-            log.error("SuspiciousActivity service deleteActivity exception: {}", error.getMessage());
+            log.error("Exception occurs in delete operation of SuspiciousActivityService : {}", error.getMessage());
         }
         return isDeleted;
     }

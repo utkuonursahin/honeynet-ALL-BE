@@ -94,6 +94,8 @@ public class SecurityConfig {
                 .requestMatchers("/server-info/**").hasAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/suspicious/client/**").hasAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/suspicious/server/**").permitAll()
+                .requestMatchers("/email-info/**").hasAuthority(UserRole.ADMIN.toString())
+                .requestMatchers("/report").permitAll()
                 .requestMatchers("/**").denyAll()
             )
             .exceptionHandling(exception -> exception
