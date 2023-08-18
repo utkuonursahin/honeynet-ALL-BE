@@ -15,7 +15,7 @@ public class AppService {
     private static final String TOKEN_HEADER = "In-App-Auth-Token";
     private final JWTService jwtService;
     private final SshServerMain sshServerMain;
-    @Value("${ssh.port}")
+
     public void shutdown(HttpServletRequest httpServletRequest) {
         try{
             String authToken = (httpServletRequest.getHeader(TOKEN_HEADER));

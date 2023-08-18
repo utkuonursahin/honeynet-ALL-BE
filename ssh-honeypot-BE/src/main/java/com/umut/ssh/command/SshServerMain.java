@@ -1,6 +1,7 @@
 package com.umut.ssh.command;
 
 import com.umut.ssh.util.SimpleLog;
+import jakarta.annotation.PostConstruct;
 import org.apache.sshd.cli.CliLogger;
 import org.apache.sshd.common.NamedResource;
 import org.apache.sshd.common.PropertyResolver;
@@ -21,9 +22,7 @@ import org.apache.sshd.server.shell.ShellFactory;
 import org.apache.sshd.server.subsystem.SubsystemFactory;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.stereotype.Component;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Level;
@@ -32,8 +31,7 @@ import java.util.stream.Collectors;
 import static org.apache.sshd.cli.CliSupport.setupIoServiceFactory;
 import static org.apache.sshd.cli.server.SshServerCliSupport.*;
 
-@RestController
-@RequestMapping("/ssh-start")
+@Component
 public class SshServerMain {
     private SshServer sshdInstance;
     static String[] rootPasswords= {"123456", "root", "admin", "123", "0", "1"};
@@ -42,7 +40,18 @@ public class SshServerMain {
     @Value("${ssh.port}")
     private int port;
 
-    @PostMapping("/start")
+    @PostConstruct
+    public void init(){
+        Thread thread = new Thread(() -> {
+            try {
+                sshServerStart();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        thread.start();
+    }
+
     public void sshServerStart() throws Exception {
         boolean error = false;
         String hostKeyType = AbstractGeneratorHostKeyProvider.DEFAULT_ALGORITHM;

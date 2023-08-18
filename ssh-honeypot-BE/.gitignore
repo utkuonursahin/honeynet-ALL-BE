@@ -32,5 +32,10 @@ build/
 ### VS Code ###
 .vscode/
 
+key.ser
 log_dummycommand.txt
 log_entries.txt
+
+target/key.ser
+target/log_dummycommand.txt
+target/log_entries.txt
