@@ -23,6 +23,8 @@ import org.apache.sshd.server.subsystem.SubsystemFactory;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.io.FileWriter;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Level;
@@ -40,8 +42,18 @@ public class SshServerMain {
     @Value("${ssh.port}")
     private int port;
 
+    @Value("${be.firmId}")
+    private String firmId;
+
     @PostConstruct
     public void init(){
+        try{
+            FileWriter writer = new FileWriter("C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\ssh-honeypot-BE\\src\\main\\resources\\firmId.txt");
+            writer.write(firmId);
+            writer.close();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
         Thread thread = new Thread(() -> {
             try {
                 sshServerStart();

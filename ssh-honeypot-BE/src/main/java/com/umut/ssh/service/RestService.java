@@ -3,24 +3,26 @@ package com.umut.ssh.service;
 import com.umut.ssh.suspiciousactivity.Origin;
 import com.umut.ssh.suspiciousactivity.SuspiciousActivity;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 @Service
 @Slf4j
 public class RestService {
-
     private final RestTemplate restTemplate;
     private final JWTService jwtService;
-
+    private String firmId;
 
     public RestService(RestTemplateBuilder restTemplateBuilder, JWTService jwtService){
         this.restTemplate = restTemplateBuilder.build();
@@ -41,8 +43,6 @@ public class RestService {
             return null;
         }
     }
-    @Value("${be.firmId}")
-    private String firmId;
 
     public Map<String,Object> generateBody(Origin origin,String entryTime, String msg){
         Map<String,Object> payload = new HashMap<>();
@@ -67,6 +67,9 @@ public class RestService {
 
     public void postSuspiciousActivity(Origin origin,String time,String msg){
         try{
+            BufferedReader reader = new BufferedReader(new FileReader("C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\ssh-honeypot-BE\\src\\main\\resources\\firmId.txt"));
+            firmId = reader.readLine();
+            reader.close();
             HttpHeaders headers = generateHeaders();
             Map<String, Object> body = generateBody(origin,time,msg);
             post(body,headers);
