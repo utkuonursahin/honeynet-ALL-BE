@@ -1,6 +1,5 @@
 package com.umut.ssh.command;
 
-import com.umut.ssh.SshApplication;
 import com.umut.ssh.util.SimpleLog;
 import org.apache.sshd.cli.CliLogger;
 import org.apache.sshd.common.NamedResource;
@@ -12,6 +11,7 @@ import org.apache.sshd.common.keyprovider.HostKeyCertificateProvider;
 import org.apache.sshd.common.keyprovider.KeyPairProvider;
 import org.apache.sshd.common.util.GenericUtils;
 import org.apache.sshd.scp.server.ScpCommandFactory;
+import org.apache.sshd.server.SshServer;
 import org.apache.sshd.server.auth.pubkey.AcceptAllPublickeyAuthenticator;
 import org.apache.sshd.server.config.SshServerConfigFileReader;
 import org.apache.sshd.server.config.keys.ServerIdentity;
@@ -21,10 +21,9 @@ import org.apache.sshd.server.shell.ShellFactory;
 import org.apache.sshd.server.subsystem.SubsystemFactory;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import java.io.IOException;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.logging.Level;
@@ -33,15 +32,17 @@ import java.util.stream.Collectors;
 import static org.apache.sshd.cli.CliSupport.setupIoServiceFactory;
 import static org.apache.sshd.cli.server.SshServerCliSupport.*;
 
-@Configuration
-public class SshServer {
-    static String[] rootPwds= {"123456", "root", "admin", "123", "0", "1"};
-    static String[] piPwds= {"raspberry", "pi"};
+@RestController
+@RequestMapping("/ssh-start")
+public class SshServerMain {
+    private SshServer sshdInstance;
+    static String[] rootPasswords= {"123456", "root", "admin", "123", "0", "1"};
+    static String[] piPasswords= {"raspberry", "pi"};
 
-    @Value("${server.port}")
+    @Value("${ssh.port}")
     private int port;
 
-    @Bean
+    @PostMapping("/start")
     public void sshServerStart() throws Exception {
         boolean error = false;
         String hostKeyType = AbstractGeneratorHostKeyProvider.DEFAULT_ALGORITHM;
@@ -144,31 +145,28 @@ public class SshServer {
 
         PropertyResolver resolver = PropertyResolverUtils.toPropertyResolver(options);
         Level level = CliLogger.resolveLoggingVerbosity(resolver, args);
-        Logger logger = CliLogger.resolveSystemLogger(SshApplication.class, level);
-        org.apache.sshd.server.SshServer sshd = error
-                ? null
-                : setupIoServiceFactory(
-                org.apache.sshd.server.SshServer.setUpDefaultServer(), resolver,
-                level, System.out, System.err, args);
+        Logger logger = CliLogger.resolveSystemLogger(SshServerMain.class, level);
+        SshServer sshd = setupIoServiceFactory(
+        SshServer.setUpDefaultServer(), resolver,
+        level, System.out, System.err, args);
         if (sshd == null) {
             error = true;
         }
 
         if (error) {
             System.err.println(
-                    "usage: sshd [-p port] [-io mina|nio2|netty] [-key-type RSA|DSA|EC] [-key-size NNNN] [-key-file <path>] [-o option=value]");
+                    "usage: sshd [-p port] [-io mina|nio2|netty] [-key-type RSA|DSA|EC] [-key-size ] [-key-file <path>] [-o option=value]");
             System.exit(-1);
-            return;
-        }
+            return;}
 
         Map<String, Object> props = sshd.getProperties();
         props.putAll(options);
 
         SshServerConfigFileReader.configure(sshd, resolver, true, true);
-        KeyPairProvider hostKeyProvider = resolveServerKeys(System.err, hostKeyType, hostKeySize, keyFiles);
+        KeyPairProvider hostKeyProvider = resolveServerKeys(System.err, hostKeyType, hostKeySize, null);
         sshd.setKeyPairProvider(hostKeyProvider);
-        if (GenericUtils.isNotEmpty(certFiles)) {
-            assert certFiles != null;
+        if (GenericUtils.isNotEmpty((Collection<?>) null)) {
+            assert false;
             HostKeyCertificateProvider certProvider = new FileHostKeyCertificateProvider(
                     certFiles.stream().map(Paths::get).collect(Collectors.toList()));
             sshd.setHostKeyCertificateProvider(certProvider);
@@ -177,15 +175,15 @@ public class SshServer {
         sshd.setPort(port);
 
         ShellFactory shellFactory = DummyCommand::new;
-        SimpleLog.log("SSHd: SshServerMain: main(): shellFactory: " + shellFactory.getClass().toString());
+        SimpleLog.log("SSHd: SshServerMain: main(): shellFactory: " + shellFactory.getClass());
         if (logger.isInfoEnabled()) {
             logger.info("Using shell={}", shellFactory.getClass().getName());
         }
         sshd.setShellFactory(shellFactory);
 
         sshd.setPasswordAuthenticator((username, password, session) -> passwdCheck(session, username, password));
-        SimpleLog.log("SSHd: SshServerMain: main(): root's pwd: " + rootPwds[0] + ", " + rootPwds[1] + ", " + rootPwds[2] + ", " + rootPwds[3] + ", " + rootPwds[4] + ", " + rootPwds[5]);
-        SimpleLog.log("SSHd: SshServerMain: main(): pi's pwd: " + piPwds[0] + ", " + piPwds[1]);
+        SimpleLog.log("SSHd: SshServerMain: main(): root's password: " + rootPasswords[0] + ", " + rootPasswords[1] + ", " + rootPasswords[2] + ", " + rootPasswords[3] + ", " + rootPasswords[4] + ", " + rootPasswords[5]);
+        SimpleLog.log("SSHd: SshServerMain: main(): pi's password: " + piPasswords[0] + ", " + piPasswords[1]);
 
 
         sshd.setPublickeyAuthenticator(AcceptAllPublickeyAuthenticator.INSTANCE);
@@ -202,13 +200,32 @@ public class SshServer {
         }
 
         System.err.println("Starting SSHD on port " + port);
+        sshdInstance = sshd;
         sshd.start();
         Thread.sleep(Long.MAX_VALUE);
         System.err.println("Exiting after a very (very very) long time");
+
+    }
+    // ----server start end----
+    // (is-alive)
+    // public boolean isServerRunning() {
+    //    return sshdInstance != null && sshdInstance.isOpen();
+    //}
+
+    public void sshServerStop() {
+        if (sshdInstance != null) {
+            try {
+                sshdInstance.stop();
+                sshdInstance = null;
+                System.out.println("SSH server stopped");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private static void setupCommandFactory(
-            org.apache.sshd.server.SshServer sshd, Level level, ShellFactory shellFactory) {
+            SshServer sshd, Level level, ShellFactory shellFactory) {
         ScpCommandFactory scpFactory;
         if (shellFactory instanceof ScpCommandFactory) {
             scpFactory = (ScpCommandFactory) shellFactory;
@@ -221,14 +238,14 @@ public class SshServer {
     private static boolean passwdCheck(ServerSession session, String username, String password) {
         boolean success = false;
         if (Objects.equals(username, "root")) {
-            for (String pwd : rootPwds) {
+            for (String pwd : rootPasswords) {
                 if (Objects.equals(password, pwd)) {
                     success = true;
                     break;
                 }
             }
         } else if (Objects.equals(username, "pi")) {
-            for (String pwd : piPwds) {
+            for (String pwd : piPasswords) {
                 if (Objects.equals(password, pwd)) {
                     success = true;
                     break;
