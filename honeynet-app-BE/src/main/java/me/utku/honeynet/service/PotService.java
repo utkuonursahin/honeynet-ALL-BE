@@ -24,7 +24,7 @@ public class PotService {
         try {
             pots = potRepository.findAll();
         } catch (Exception exception) {
-            log.error("Pot service getAll exception: {}", exception.getMessage());
+            log.error("Exception occurs in get all operation of PotService : {}", exception.getMessage());
         }
         return pots;
     }
@@ -34,7 +34,7 @@ public class PotService {
         try{
             pot = potRepository.findById(id).orElse(null);
         }catch(Exception exception){
-            log.error("Pot service get exception: {}",exception.getMessage());
+            log.error("Exception occurs in get operation of PotService : {}",exception.getMessage());
         }
         return pot;
     }
@@ -50,7 +50,7 @@ public class PotService {
                 image = Files.readAllBytes(path);
             }
         }catch (Exception error){
-            log.error("Pot service getImage exception: {}",error.getMessage());
+            log.error("Exception occurs in get image operation of PotService: {}",error.getMessage());
         }
         return image;
     }
@@ -60,8 +60,9 @@ public class PotService {
         try {
             newPot.setId(UUID.randomUUID().toString());
             pot = potRepository.save(newPot);
+            log.info("New pot has been created as {} with ID : {} ",pot.getPotName(), pot.getId());
         } catch (Exception exception){
-            log.error("Pot service create exception: {}",exception.getMessage());
+            log.error("Exception occurs in create operation of PotService: {}",exception.getMessage());
         }
         return pot;
     }
@@ -73,19 +74,23 @@ public class PotService {
             existPot = potRepository.findById(potId).orElse(null);
             if (existPot == null) throw new Exception("No pot found with given id!");
             potRepository.save(existPot);
+            log.info("{} has been updated successfully with ID : {}" ,existPot.getPotName(),potId);
         }catch(Exception exception){
-            log.error("Pot service update exception: {}",exception.getMessage());
+            log.error("Exception occurs in update operation of PotService: {}",exception.getMessage());
         }
         return existPot;
     }
 
     public boolean delete(String id) {
         boolean isDeleted = false;
+        Pot pot;
         try{
+            pot = potRepository.findById(id).orElseThrow();
             potRepository.deleteById(id);
             isDeleted = true;
+            log.info("{} has been deleted successfully with ID : {}",pot.getPotName(),id);
         } catch(Exception exception){
-            log.error("Pot service delete exception: {}",exception.getMessage());
+            log.error("Exception occurs in delete operation of PotService : {}",exception.getMessage());
         }
         return isDeleted;
     }
