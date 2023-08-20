@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 @Slf4j
 public class CloneService {
-    private static final String WORKING_DIRECTORY = "C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\clone-honeypot-BE\\";
+    private static final String WORKING_DIRECTORY = "D:\\AngularProjects\\honeynet-ALL-BE\\clone-honeypot-BE\\";
     private static final String TEMPLATES_PATH = "src\\main\\resources\\templates\\";
     private static final String FILE_TYPE = ".html";
     private final File indexHtml = new File(WORKING_DIRECTORY+TEMPLATES_PATH+"index"+FILE_TYPE);
