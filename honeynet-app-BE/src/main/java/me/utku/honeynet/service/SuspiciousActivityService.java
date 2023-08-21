@@ -226,12 +226,14 @@ public class SuspiciousActivityService {
             String authToken = httpServletRequest.getHeader(TOKEN_HEADER);
             if(authToken != null && jwtService.validateJWT(authToken)){
                 newSuspiciousActivity.setId(UUID.randomUUID().toString());
+                email.setSuspiciousActivityRef(newSuspiciousActivity.getId());
                 firmService.get(newSuspiciousActivity.getFirmRef()).getAlertReceivers().forEach(receiver->{
                     sendEmail(newSuspiciousActivity,receiver,"fakemployeebeam@gmail.com","Alert",newSuspiciousActivity.getCategory(),
                             newSuspiciousActivity.getPotName(), newSuspiciousActivity.getPayload(), new Date(),
                             email, newSuspiciousActivity.getOrigin()
                     );
                 });
+
                 suspiciousActivity = suspiciousRepository.save(newSuspiciousActivity);
                 log.info("New Suspicious Activity successfully noted as {} attack with ID : {}", newSuspiciousActivity.getCategory(),newSuspiciousActivity.getId());
             }
