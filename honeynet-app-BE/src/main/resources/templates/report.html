@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="">
+<head>
+    <title>Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .report {
+            margin-bottom: 30px;
+        }
+
+        .report h2 {
+            margin-top: 0;
+        }
+
+        .report-table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 600px; /* Adjust the maximum width */
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+        }
+
+        .report-table th, .report-table td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .report-table th {
+            background-color: #f2f2f2;
+        }
+
+        /* Additional styling for a cleaner appearance */
+        .report {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .report-table {
+            flex: 0 0 calc(33.33% - 20px); /* Adjust the width based on the number of tables */
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* Add custom styles for each table class */
+        .category-table th {
+            background-color: lightblue;
+        }
+
+        .source-table th {
+            background-color: lightgreen;
+        }
+
+        .country-table th {
+            background-color: lightcoral;
+        }
+    </style>
+</head>
+<body>
+<h1>Report</h1>
+
+<!-- Loop through each table -->
+<div class="report">
+
+    <table class="report-table category-table">
+        <thead>
+        <tr>
+            <th></th>
+            <th th:each="item : ${categoryList}" th:text="${item.getCategory()}"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th>Category Count</th>
+            <td th:each="item : ${categoryList}" th:text="${item.getCategoryCount()}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <table class="report-table source-table">
+        <thead>
+        <tr>
+            <th></th>
+            <th th:each="item : ${sourceList}" th:text="${item.getSourceIp()}"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th>Source Count</th>
+            <td th:each="item : ${sourceList}" th:text="${item.getSourceCount()}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <table class="report-table country-table">
+        <thead>
+        <tr>
+            <th></th>
+            <th th:each="item : ${countryList}" th:text="${item.getCountry()}"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <th>Country Count</th>
+            <td th:each="item : ${countryList}" th:text="${item.getCountryCount()}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+
+</html>

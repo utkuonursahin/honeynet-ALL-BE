@@ -9,11 +9,11 @@ import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByCategoryDTO;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginCountryDTO;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginSourceDTO;
 import me.utku.honeynet.dto.email.EmailFooterStatics;
+import me.utku.honeynet.dto.report.ReportSource;
 import me.utku.honeynet.dto.suspiciousActivity.PaginatedSuspiciousActivities;
 import me.utku.honeynet.dto.suspiciousActivity.SuspiciousActivityFilter;
 import me.utku.honeynet.enums.PotCategory;
-import me.utku.honeynet.model.EmailInfo;
-import me.utku.honeynet.model.SuspiciousActivity;
+import me.utku.honeynet.model.*;
 import me.utku.honeynet.repository.SuspiciousRepository;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -44,6 +44,13 @@ public class SuspiciousActivityService {
     private final EmailInfoService emailInfoService;
     private final JavaMailSender mailSender;
     private final FirmService firmService;
+
+    private final ReportService reportService;
+
+
+
+    //to be deleted later --only for test purposes--
+
 
     public PaginatedSuspiciousActivities createPaginatedSuspiciousActivity(Page<SuspiciousActivity> activities, int page, int size){
         PaginatedSuspiciousActivities paginatedSuspiciousActivities = new PaginatedSuspiciousActivities();
@@ -130,7 +137,7 @@ public class SuspiciousActivityService {
         }
         return suspiciousActivity;
     }
-    private static String renderThymeleafTemplate(String templateName, Map<String,Object> model){
+    public  String renderThymeleafTemplate(String templateName, Map<String,Object> model){
         TemplateEngine templateEngine = new TemplateEngine();
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setPrefix("templates/");
@@ -219,6 +226,9 @@ public class SuspiciousActivityService {
         }
     }
 
+    //deleted later -only for test purposes-
+
+
     public SuspiciousActivity createActivity(SuspiciousActivity newSuspiciousActivity, HttpServletRequest httpServletRequest) {
         SuspiciousActivity suspiciousActivity = new SuspiciousActivity();
         EmailInfo email = new EmailInfo();
@@ -233,6 +243,24 @@ public class SuspiciousActivityService {
                             email, newSuspiciousActivity.getOrigin()
                     );
                 });
+//                System.out.println(reportService.anotherMethod());
+//                List<ReportCategory> mylist = reportService.getCategoryandCount();
+//                mylist.forEach(element->{
+//                    System.out.println("Category: " + element.getCategory() + ", Count: " + element.getCategoryCount());
+//                });
+//                List<ReportCountry> mylist = reportService.getCountryandCount();
+//                mylist.forEach(element->{
+//                    System.out.println("Category: " + element.getCountry() + ", Count: " + element.getCountryCount());
+//                });
+                List<ReportSource> mylist = reportService.getSourceandCount();
+                mylist.forEach(element->{
+                    System.out.println("Category: " + element.getSourceIp() + ", Count: " + element.getSourceCount());
+                });
+
+
+
+
+
 
                 suspiciousActivity = suspiciousRepository.save(newSuspiciousActivity);
                 log.info("New Suspicious Activity successfully noted as {} attack with ID : {}", newSuspiciousActivity.getCategory(),newSuspiciousActivity.getId());
@@ -242,6 +270,8 @@ public class SuspiciousActivityService {
         }
         return suspiciousActivity;
     }
+
+
 
     //NOT COMPLETED
     public SuspiciousActivity updateActivity(String id, SuspiciousActivity updatedSuspiciousActivity, HttpServletRequest httpServletRequest ) {
