@@ -19,10 +19,10 @@ import java.util.regex.Pattern;
 @RequiredArgsConstructor
 @Slf4j
 public class CloneService {
-    private static final String WORKING_DIRECTORY = "C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\clone-honeypot-BE\\";
-    private static final String TEMPLATES_PATH = "src\\main\\resources\\templates\\";
+    private static final String ROOT_DIRECTORY = new File("").getAbsoluteFile().getParentFile().getAbsolutePath();
+    private static final String TEMPLATES_PATH = "\\src\\main\\resources\\templates\\";
     private static final String FILE_TYPE = ".html";
-    private final File indexHtml = new File(WORKING_DIRECTORY+TEMPLATES_PATH+"index"+FILE_TYPE);
+    private final File indexHtml = new File(ROOT_DIRECTORY+TEMPLATES_PATH+"index"+FILE_TYPE);
     private final HashMap<String,String> routesMap = new HashMap<>();
     private final Pattern pattern = Pattern.compile("https:\\/\\/[^\\/]+\\/([^\\/]+)\\/");
 
@@ -55,7 +55,7 @@ public class CloneService {
             if(matcher.find() && (exactUrl.contains("http") || exactUrl.contains("https"))){
                 route = matcher.group(1);
                 linkElement.attr("href", route + FILE_TYPE);
-                File htmlFile = new File(WORKING_DIRECTORY+TEMPLATES_PATH+ route + FILE_TYPE);
+                File htmlFile = new File(ROOT_DIRECTORY+TEMPLATES_PATH+ route + FILE_TYPE);
                 write(htmlFile,clone(exactUrl).outerHtml());
                 routesMap.put(exactUrl,route);
             } else if(!exactUrl.contains("#")){
@@ -67,7 +67,7 @@ public class CloneService {
     }
 
     public void pairPageLinks(){
-        File templateFolder = new File(WORKING_DIRECTORY+TEMPLATES_PATH);
+        File templateFolder = new File(ROOT_DIRECTORY+TEMPLATES_PATH);
         File[] files = templateFolder.listFiles();
         Document document;
         try{
@@ -91,9 +91,9 @@ public class CloneService {
 
     public void clearDirectories(){
         try{
-            File directory = new File(WORKING_DIRECTORY+"\\src\\main\\resources\\static\\");
+            File directory = new File(ROOT_DIRECTORY+"\\src\\main\\resources\\static\\");
             FileUtils.cleanDirectory(directory);
-            directory = new File(WORKING_DIRECTORY+TEMPLATES_PATH);
+            directory = new File(ROOT_DIRECTORY+TEMPLATES_PATH);
             FileUtils.cleanDirectory(directory);
         } catch (Exception error){
             log.error("Clone pot service clearDirectories error: {}", error.getMessage());

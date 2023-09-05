@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
 import java.util.*;
 
 @Service
@@ -133,7 +134,7 @@ public class RestService {
             ServerInfo serverInfo = serverInfoService.getByPotIdAndFirmId(potId,firmId);
             serverInfoService.shutdown(serverInfo.getId());
             Thread.sleep(100);
-            serverInfoService.extractJar("C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\clone-honeypot-BE");
+            serverInfoService.extractJar(new File("").getAbsoluteFile().getParent()+"\\clone-honeypot-BE");
             serverInfoService.start(serverInfo.getId());
             return cloneResponse;
         } catch (Exception error){
