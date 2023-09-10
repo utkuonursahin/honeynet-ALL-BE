@@ -7,11 +7,9 @@ import me.utku.honeynet.dto.security.JsonAuthFailureHandler;
 import me.utku.honeynet.dto.security.JsonAuthSuccessHandler;
 import me.utku.honeynet.dto.security.JsonLogoutSuccessHandler;
 import me.utku.honeynet.enums.UserRole;
-import me.utku.honeynet.repository.UserRepository;
 import me.utku.honeynet.service.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -90,6 +88,7 @@ public class SecurityConfig {
                 .requestMatchers("/firm/**").hasAuthority(UserRole.SUPER_ADMIN.toString())
                 .requestMatchers("/chart/**").hasAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/pot/**").hasAuthority(UserRole.ADMIN.toString())
+                .requestMatchers("/user/is-authenticated").permitAll()
                 .requestMatchers("/user/**").hasAnyAuthority(UserRole.SUPER_ADMIN.toString(), UserRole.ADMIN.toString())
                 .requestMatchers("/server-info/**").hasAuthority(UserRole.ADMIN.toString())
                 .requestMatchers("/suspicious/client/**").hasAuthority(UserRole.ADMIN.toString())

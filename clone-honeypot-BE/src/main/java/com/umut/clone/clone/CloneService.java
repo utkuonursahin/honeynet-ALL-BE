@@ -73,7 +73,7 @@ public class CloneService {
         try{
             if(files == null) throw new Exception("Files is null");
             for(File file : files){
-                if(!file.isFile()) throw new Exception("File is not a file");
+                if(!file.isFile()) throw new Exception("File could not found");
                 document = Jsoup.parse(file, "UTF-8");
                 Elements linkElements = document.select("a");
                 for (Element linkElement : linkElements) {
