@@ -45,12 +45,6 @@ public class SuspiciousActivityService {
     private final JavaMailSender mailSender;
     private final FirmService firmService;
 
-    private final ReportService reportService;
-
-
-
-    //to be deleted later --only for test purposes--
-
 
     public PaginatedSuspiciousActivities createPaginatedSuspiciousActivity(Page<SuspiciousActivity> activities, int page, int size){
         PaginatedSuspiciousActivities paginatedSuspiciousActivities = new PaginatedSuspiciousActivities();
@@ -226,7 +220,6 @@ public class SuspiciousActivityService {
         }
     }
 
-    //deleted later -only for test purposes-
 
 
     public SuspiciousActivity createActivity(SuspiciousActivity newSuspiciousActivity, HttpServletRequest httpServletRequest) {
@@ -243,25 +236,6 @@ public class SuspiciousActivityService {
                             email, newSuspiciousActivity.getOrigin()
                     );
                 });
-//                System.out.println(reportService.anotherMethod());
-//                List<ReportCategory> mylist = reportService.getCategoryandCount();
-//                mylist.forEach(element->{
-//                    System.out.println("Category: " + element.getCategory() + ", Count: " + element.getCategoryCount());
-//                });
-//                List<ReportCountry> mylist = reportService.getCountryandCount();
-//                mylist.forEach(element->{
-//                    System.out.println("Category: " + element.getCountry() + ", Count: " + element.getCountryCount());
-//                });
-                List<ReportSource> mylist = reportService.getSourceandCount();
-                mylist.forEach(element->{
-                    System.out.println("Category: " + element.getSourceIp() + ", Count: " + element.getSourceCount());
-                });
-
-
-
-
-
-
                 suspiciousActivity = suspiciousRepository.save(newSuspiciousActivity);
                 log.info("New Suspicious Activity successfully noted as {} attack with ID : {}", newSuspiciousActivity.getCategory(),newSuspiciousActivity.getId());
             }

@@ -19,12 +19,4 @@ public class SuspiciousActivityFilter {
     private Instant[] dateFilters;
     private int page;
 
-    public static SuspiciousActivityFilter createWithDefaults() {
-        SuspiciousActivityFilter filter = new SuspiciousActivityFilter();
-        filter.setOriginFilter(new Origin("", "", "", ""));
-        filter.setCategoryFilters(Collections.emptyList());
-        filter.setDateFilters(new Instant[]{Instant.MIN, Instant.MAX});
-        filter.setPage(0);
-        return filter;
-    }
 }

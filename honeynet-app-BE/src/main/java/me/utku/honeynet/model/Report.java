@@ -8,17 +8,18 @@ import me.utku.honeynet.dto.report.ReportCategory;
 import me.utku.honeynet.dto.report.ReportCountry;
 import me.utku.honeynet.dto.report.ReportSource;
 import org.springframework.data.annotation.TypeAlias;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.Date;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@TypeAlias("report")
+@TypeAlias("Report")
 public class Report extends Base{
     private ReportCategory reportCategory;
     private ReportCountry reportCountry;
     private ReportSource reportSource;
-    private LocalDateTime reportInitDate;
+    private Date reportInitDate;
 
 }
