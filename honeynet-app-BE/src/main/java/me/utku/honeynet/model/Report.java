@@ -10,6 +10,7 @@ import me.utku.honeynet.dto.report.ReportSource;
 import org.springframework.data.annotation.TypeAlias;
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,9 +18,10 @@ import java.util.Date;
 @NoArgsConstructor
 @TypeAlias("Report")
 public class Report extends Base{
-    private ReportCategory reportCategory;
-    private ReportCountry reportCountry;
-    private ReportSource reportSource;
+    private List<ReportCategory> reportCategory;
+    private List<ReportCountry> reportCountry;
+    private List<ReportSource> reportSource;
     private Date reportInitDate;
+    private String reportPath;
 
 }

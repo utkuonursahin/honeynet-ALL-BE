@@ -11,6 +11,7 @@ import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginSourceDTO;
 import me.utku.honeynet.dto.report.ReportCategory;
 import me.utku.honeynet.dto.report.ReportCountry;
 import me.utku.honeynet.dto.report.ReportSource;
+import me.utku.honeynet.model.Report;
 import me.utku.honeynet.repository.ReportRepository;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
@@ -25,6 +26,7 @@ public class ReportService {
 
     private final ReportRepository reportRepository;
     private final SuspiciousActivityService suspiciousActivityService;
+    private static Integer pdfIdentifier = 1;
 
 
     public List<ReportCategory> getCategoryandCount(Boolean filter) {
@@ -68,7 +70,23 @@ public class ReportService {
         return (filter) ? sourceList : null;
     }
 
-    public String htmlToPdf(String processedHtml){
+    public void saveReport(String filePath){
+        Report report = new Report();
+        try {
+            report.setReportInitDate(new Date());
+            report.setReportCategory(getCategoryandCount(true));
+            report.setReportCountry(getCountryandCount(true));
+            report.setReportSource(getSourceandCount(true));
+            report.setReportPath(filePath);
+            reportRepository.save(report);
+            log.info("New Report successfully created !");
+        }catch (Exception exception){
+            log.error("Error occurs while creating new report at ReportService : {}",exception.getMessage());
+        }
+
+    }
+
+    public byte[] htmlToPdf(String processedHtml){
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
             PdfWriter pdfWriter = new PdfWriter(byteArrayOutputStream);
@@ -76,15 +94,18 @@ public class ReportService {
             ConverterProperties converterProperties = new ConverterProperties();
             converterProperties.setFontProvider(defaultFont);
             HtmlConverter.convertToPdf(processedHtml, pdfWriter, converterProperties);
-            FileOutputStream fileOutputStream = new FileOutputStream("D:\\Desktop\\save\\report.pdf");
+            pdfIdentifier ++;
+            String filePath = "D:\\Desktop\\save\\report"+pdfIdentifier+".pdf";
+            saveReport(filePath);
+            FileOutputStream fileOutputStream = new FileOutputStream(filePath);
             byteArrayOutputStream.writeTo(fileOutputStream);
             byteArrayOutputStream.close();
             byteArrayOutputStream.flush();
             fileOutputStream.close();
-            return null;
+            return byteArrayOutputStream.toByteArray();
 
         }catch (Exception exception){
-            //exception
+            log.error("Exception occurs in htmlToPdf operation of ReportService : {}",exception.getMessage());
         }
         return null;
     }
