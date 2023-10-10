@@ -22,10 +22,9 @@ public class ReportController {
         httpHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=report.pdf");
         Context dataContext = reportService.setData(filter.getCategoryFilter(), filter.getCountryFilter(), filter.getSourceFilter());
         finalHtml = springTemplateEngine.process("report",dataContext);
-        byte[] pdfBytes = reportService.htmlToPdf(finalHtml);
+        byte[] pdfBytes = reportService.htmlToPdf(finalHtml, filter.getCategoryFilter(), filter.getCountryFilter(), filter.getSourceFilter());
         return ResponseEntity.ok()
                 .headers(httpHeaders)
                 .body(pdfBytes);
     }
-
 }

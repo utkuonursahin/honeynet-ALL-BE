@@ -10,11 +10,5 @@ import java.util.Date;
 
 public interface ReportRepository extends MongoRepository<Report,String> {
 
-//    @Query
-//    Report findAllByReportCategoryCategoryAndReportCountryCountryAndReportSourceSourceIpAndReportInitDate(
-//            String category,
-//            String country,
-//            String sourceIp,
-//            Date date
-//    );
+    Report findFirstByOrderByReportInitDateDesc();
 }
