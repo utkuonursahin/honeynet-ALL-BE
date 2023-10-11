@@ -31,7 +31,6 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final SuspiciousActivityService suspiciousActivityService;
     private final FirmService firmService;
-    private static Integer pdfIdentifier;
 
 
     //for returning all firmRefs from FirmService
@@ -94,7 +93,7 @@ public class ReportService {
     public byte[] htmlToPdf(String processedHtml, Boolean categoryFilter, Boolean countryFilter, Boolean sourceFilter) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         Random random = new Random();
-        pdfIdentifier = random.nextInt(9999 - 1 + 1) + 1; // Generate a random number between 1 and 9999
+        Integer pdfIdentifier = random.nextInt(9999 - 1 + 1) + 1; // Generate a random number between 1 and 9999
         Report newestReport = reportRepository.findFirstByOrderByReportInitDateDesc();
         Pattern pattern = Pattern.compile("\\d+");
         Matcher matcher = pattern.matcher(newestReport.getReportPath());
@@ -162,56 +161,45 @@ public class ReportService {
                 Report report = new Report();
                 report.setReportInitDate(new Date());
                 report.setReportPath(filePath);
-                List<ReportContains> reportContainsList = new ArrayList<>();
+                ReportContains[] reportContainsList = new ReportContains[3];
 
-                if (categoryFilter) {
-                    List<ReportCategory> categoryList = getCategoryandCount(categoryFilter, firmRef);
+
+                List<ReportCategory> categoryList = getCategoryandCount(categoryFilter, firmRef);
+                if (categoryList != null) {
                     report.setReportCategory(categoryList);
-                    if (!reportContainsList.contains(ReportContains.CATEGORY)) {
-                        reportContainsList.add(ReportContains.CATEGORY);
-                    }
-                } else {
+                    reportContainsList[0] = ReportContains.CATEGORY;
+                }else {
                     report.setReportCategory(null);
-
+                    reportContainsList[0] = null;
                 }
 
-                if (countryFilter) {
-                    List<ReportCountry> countryList = getCountryandCount(countryFilter, firmRef);
+                List<ReportCountry> countryList = getCountryandCount(countryFilter, firmRef);
+                if (countryList != null) {
                     report.setReportCountry(countryList);
-                    if (!reportContainsList.contains(ReportContains.COUNTRY)) {
-                        reportContainsList.add(ReportContains.COUNTRY);
-                    }
-                } else {
-                    report.setReportCountry(null);
+                    reportContainsList[1] = ReportContains.COUNTRY;
+                }else{
+                    report.setReportCategory(null);
+                    reportContainsList[1] = null;
                 }
 
-                if (sourceFilter) {
-                    List<ReportSource> sourceList = getSourceandCount(sourceFilter, firmRef);
+                List<ReportSource> sourceList = getSourceandCount(sourceFilter, firmRef);
+                if (sourceList != null) {
                     report.setReportSource(sourceList);
-                    if (!reportContainsList.contains(ReportContains.SOURCE)) {
-                        reportContainsList.add(ReportContains.SOURCE);
-                    }
-                } else {
+                    reportContainsList[2] = ReportContains.SOURCE;
+                }else{
                     report.setReportSource(null);
+                    reportContainsList[2] = null;
                 }
-
-                ReportContains[] reportContainsArray = reportContainsList.toArray(new ReportContains[0]);
-                report.setReportContains(reportContainsArray);
-
-                if ((report.getReportCategory() != null && !report.getReportCategory().isEmpty()) ||
-                        (report.getReportCountry() != null && !report.getReportCountry().isEmpty()) ||
-                        (report.getReportSource() != null && !report.getReportSource().isEmpty())) {
-                    reportRepository.save(report);
-                    log.info("New Report successfully created for firmRef: {}", firmRef);
-                } else {
-                    log.warn("No report data available for firmRef: {}", firmRef);
-                }
+                report.setReportContains(reportContainsList);
+                reportRepository.save(report);
             }
             log.info("New Report successfully created !");
         } catch (Exception exception) {
             log.error("Error occurs while creating a new report at ReportService: {}", exception.getMessage());
         }
     }
+
+
 
 
 }
