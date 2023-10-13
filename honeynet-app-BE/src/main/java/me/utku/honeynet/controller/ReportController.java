@@ -6,6 +6,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 
 @Controller
 @RequiredArgsConstructor
@@ -14,11 +16,15 @@ public class ReportController {
     private final ReportService reportService;
     private final SpringTemplateEngine springTemplateEngine;
     @PostMapping
-    public String generateDocument(@RequestBody ReportFilter filter) {
+    public ResponseEntity<byte[]> generateDocument(@RequestBody ReportFilter filter) {
         String finalHtml = null;
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=report.pdf");
         Context dataContext = reportService.setData(filter.getCategoryFilter(), filter.getCountryFilter(), filter.getSourceFilter());
         finalHtml = springTemplateEngine.process("report",dataContext);
-        reportService.htmlToPdf(finalHtml);
-        return "report";
+        byte[] pdfBytes = reportService.htmlToPdf(finalHtml, filter.getCategoryFilter(), filter.getCountryFilter(), filter.getSourceFilter());
+        return ResponseEntity.ok()
+                .headers(httpHeaders)
+                .body(pdfBytes);
     }
 }

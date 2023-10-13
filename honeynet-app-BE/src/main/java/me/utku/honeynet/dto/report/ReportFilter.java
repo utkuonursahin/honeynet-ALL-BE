@@ -10,5 +10,4 @@ public class ReportFilter {
     private Boolean categoryFilter;
     private Boolean countryFilter;
     private Boolean sourceFilter;
-    private Boolean dateFilter;
 }
