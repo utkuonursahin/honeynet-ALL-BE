@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ReportFilter {
-    private Boolean categoryFilter;
-    private Boolean countryFilter;
-    private Boolean sourceFilter;
+public class ReportSettings {
+    private Boolean byCategory;
+    private Boolean byCountry;
+    private Boolean bySource;
 }

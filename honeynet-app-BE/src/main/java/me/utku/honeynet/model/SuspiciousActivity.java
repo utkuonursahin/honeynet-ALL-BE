@@ -2,7 +2,7 @@ package me.utku.honeynet.model;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import me.utku.honeynet.dto.Origin;
+import me.utku.honeynet.dto.suspiciousActivity.Origin;
 import me.utku.honeynet.enums.PotCategory;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;

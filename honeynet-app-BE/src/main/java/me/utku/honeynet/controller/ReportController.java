@@ -1,7 +1,9 @@
 package me.utku.honeynet.controller;
 import lombok.RequiredArgsConstructor;
-import me.utku.honeynet.dto.report.ReportFilter;
+import me.utku.honeynet.dto.report.ReportSettings;
+import me.utku.honeynet.dto.security.CustomUserDetails;
 import me.utku.honeynet.service.ReportService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.thymeleaf.context.Context;
@@ -16,13 +18,13 @@ public class ReportController {
     private final ReportService reportService;
     private final SpringTemplateEngine springTemplateEngine;
     @PostMapping
-    public ResponseEntity<byte[]> generateDocument(@RequestBody ReportFilter filter) {
+    public ResponseEntity<byte[]> generateDocument(@RequestBody ReportSettings reportSettings, @AuthenticationPrincipal CustomUserDetails userDetails) {
         String finalHtml = null;
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=report.pdf");
-        Context dataContext = reportService.setData(filter.getCategoryFilter(), filter.getCountryFilter(), filter.getSourceFilter());
+        Context dataContext = reportService.setContext(reportSettings, userDetails.getFirmRef());
         finalHtml = springTemplateEngine.process("report",dataContext);
-        byte[] pdfBytes = reportService.htmlToPdf(finalHtml, filter.getCategoryFilter(), filter.getCountryFilter(), filter.getSourceFilter());
+        byte[] pdfBytes = reportService.htmlToPdf(finalHtml, reportSettings, userDetails.getFirmRef());
         return ResponseEntity.ok()
                 .headers(httpHeaders)
                 .body(pdfBytes);

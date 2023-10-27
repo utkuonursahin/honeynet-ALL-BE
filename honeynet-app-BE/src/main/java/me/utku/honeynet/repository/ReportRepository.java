@@ -9,6 +9,5 @@ import java.time.Instant;
 import java.util.Date;
 
 public interface ReportRepository extends MongoRepository<Report,String> {
-
-    Report findFirstByOrderByReportInitDateDesc();
+    boolean existsById(String id);
 }
