@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.utku.honeynet.dto.clone.CloneResponse;
 import me.utku.honeynet.dto.email.EmailListener;
 import me.utku.honeynet.dto.email.EmailSetupRequest;
-import me.utku.honeynet.model.ServerInfo;
+import me.utku.honeynet.model.ServerInstance;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -19,14 +19,14 @@ import java.util.*;
 @Service
 @Slf4j
 public class RestService {
-    private final ServerInfoService serverInfoService;
+    private final ServerInstanceService serverInstanceService;
     private final RestTemplate restTemplate;
     private final JWTService jwtService;
 
-    public RestService(RestTemplateBuilder restTemplateBuilder, JWTService jwtService, ServerInfoService serverInfoService) {
+    public RestService(RestTemplateBuilder restTemplateBuilder, JWTService jwtService, ServerInstanceService serverInstanceService) {
         this.restTemplate = restTemplateBuilder.build();
         this.jwtService = jwtService;
-        this.serverInfoService = serverInfoService;
+        this.serverInstanceService = serverInstanceService;
     }
 
     public HttpHeaders generateHeaders(){
@@ -51,8 +51,8 @@ public class RestService {
     }
 
     public String findServerUrl(String potId,String firmId){
-        ServerInfo serverInfo = serverInfoService.getByPotIdAndFirmId(potId,firmId);
-        return "http://localhost:"+serverInfo.getPort();
+        ServerInstance serverInstance = serverInstanceService.getByPotIdAndFirmId(potId,firmId);
+        return "http://localhost:"+ serverInstance.getPort();
     }
 
     public List<EmailListener> getEmailListeners(String url, HttpHeaders headers){
@@ -131,11 +131,11 @@ public class RestService {
             Map<String,Object> body = new HashMap<>();
             body.put("cloneUrl", cloneUrl);
             CloneResponse cloneResponse = postCloneSite(findServerUrl(potId,firmId),body,headers);
-            ServerInfo serverInfo = serverInfoService.getByPotIdAndFirmId(potId,firmId);
-            serverInfoService.shutdown(serverInfo.getId());
+            ServerInstance serverInstance = serverInstanceService.getByPotIdAndFirmId(potId,firmId);
+            serverInstanceService.shutdown(serverInstance.getId());
             Thread.sleep(100);
-            serverInfoService.extractJar(new File("").getAbsoluteFile().getParent()+"\\clone-honeypot-BE");
-            serverInfoService.start(serverInfo.getId());
+            serverInstanceService.extractJar(new File("").getAbsoluteFile().getParent()+"\\clone-honeypot-BE");
+            serverInstanceService.start(serverInstance.getId());
             return cloneResponse;
         } catch (Exception error){
             log.error("Error while forwarding clone site request: {}", error.getMessage());
@@ -143,11 +143,11 @@ public class RestService {
         }
     }
 
-    public void shutdownTargetServer(ServerInfo serverInfo){
+    public void shutdownTargetServer(ServerInstance serverInstance){
         try{
             HttpHeaders headers = generateHeaders();
             HttpEntity<String> request = new HttpEntity<>(headers);
-            this.restTemplate.exchange("http://localhost:"+serverInfo.getPort()+"/shutdown", HttpMethod.POST, request, Void.class);
+            this.restTemplate.exchange("http://localhost:"+ serverInstance.getPort()+"/shutdown", HttpMethod.POST, request, Void.class);
         } catch (Exception error){
             log.error("Error while shutting down target server: {}", error.getMessage());
         }

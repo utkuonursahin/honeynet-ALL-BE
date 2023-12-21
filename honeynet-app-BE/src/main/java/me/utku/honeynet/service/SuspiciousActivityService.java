@@ -177,21 +177,22 @@ public class SuspiciousActivityService {
 
 
     public void sendEmail(SuspiciousActivity newSuspiciousActivity, String to, String sender, String subject, PotCategory potCategory, String potName, Object payload, Date currentDate, EmailInfo email, Origin origin) {
-        EmailFooterStatics emailFooterStatics = new EmailFooterStatics() {};
-        String companyName = emailFooterStatics.COMPANY_NAME;
-        String address = emailFooterStatics.ADDRESS;
-        String phoneNumber = emailFooterStatics.PHONE_NUMBER;
-        String companyEmail = emailFooterStatics.COMPANY_EMAIL;
+        EmailFooterStatics emailFooterStatics = new EmailFooterStatics(
+            "BEAM Technology",
+            "ODTU Teknokent Galyum Binası No:D:1",
+            "216 55 48",
+            "cengiz@beam.com"
+        );
         String pattern = "dd-MM-yyyy | HH:mm:ss";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(pattern);
         String formattedDate = simpleDateFormat.format(currentDate);
         try{
             Map<String,Object> model = new HashMap<>();
             model.put("to",to);
-            model.put("companyName",companyName);
-            model.put("address",address);
-            model.put("phoneNumber",phoneNumber);
-            model.put("companyEmail",companyEmail);
+            model.put("companyName",emailFooterStatics.companyName());
+            model.put("address",emailFooterStatics.address());
+            model.put("phoneNumber",emailFooterStatics.phoneNumber());
+            model.put("companyEmail",emailFooterStatics.companyEmail());
             model.put("attackCategory",potCategory);
             model.put("potName",potName);
             model.put("date",formattedDate);
@@ -212,8 +213,6 @@ public class SuspiciousActivityService {
             email.setSuspiciousActivityRef(newSuspiciousActivity.getId());
             emailInfoService.create(email);
             mailSender.send(message);
-
-
         }catch (Exception exception){
             log.error("Exception occurs in send email operation of SuspiciousActivityService : {}", exception.getMessage());
         }

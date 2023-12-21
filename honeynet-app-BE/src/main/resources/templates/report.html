@@ -77,8 +77,8 @@
                 <th>Category Count</th>
             </tr>
             <tr th:each="item : ${categoryList}">
-                <td th:text="${item.getCategory()}"></td>
-                <td th:text="${item.getCategoryCount()}"></td>
+                <td th:text="${item.category()}"></td>
+                <td th:text="${item.count()}"></td>
             </tr>
         </table>
     </div>
@@ -90,8 +90,8 @@
                 <th>Source Count</th>
             </tr>
             <tr th:each="item : ${sourceList}">
-                <td th:text="${item.getSourceIp()}"></td>
-                <td th:text="${item.getSourceCount()}"></td>
+                <td th:text="${item.source()}"></td>
+                <td th:text="${item.count()}"></td>
             </tr>
         </table>
     </div>
@@ -103,8 +103,8 @@
                 <th>Country Count</th>
             </tr>
             <tr th:each="item : ${countryList}">
-                <td th:text="${item.getCountry()}"></td>
-                <td th:text="${item.getCountryCount()}"></td>
+                <td th:text="${item.country()}"></td>
+                <td th:text="${item.count()}"></td>
             </tr>
         </table>
     </div>

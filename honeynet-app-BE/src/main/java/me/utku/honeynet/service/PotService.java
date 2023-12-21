@@ -42,9 +42,9 @@ public class PotService {
     public byte[] getImage(String id){
         byte[] image = null;
         try{
-            Pot user =potRepository.findById(id).orElse(null);
-            if(user == null) throw new Exception("No user found with given id");
-            String imagePath = user.getPreviewImagePath();
+            Pot pot = potRepository.findById(id).orElse(null);
+            if(pot == null) throw new Exception("No pot found with given id");
+            String imagePath = pot.getPreviewImagePath();
             Path path = Paths.get(imagePath);
             if(Files.exists(path)){
                 image = Files.readAllBytes(path);

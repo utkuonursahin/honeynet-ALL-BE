@@ -1,6 +1,6 @@
 package me.utku.honeynet.enums;
 
-public enum ServerInfoStatus {
+public enum ServerInstanceStatus {
     RUN,
     SHUTDOWN,
     TERMINATED

@@ -9,17 +9,19 @@ import lombok.extern.slf4j.Slf4j;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByCategoryDTO;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginCountryDTO;
 import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginSourceDTO;
-import me.utku.honeynet.dto.report.ReportCategory;
-import me.utku.honeynet.dto.report.ReportCountry;
 import me.utku.honeynet.dto.report.ReportSettings;
-import me.utku.honeynet.dto.report.ReportSource;
 import me.utku.honeynet.model.Report;
 import me.utku.honeynet.repository.ReportRepository;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -30,120 +32,166 @@ import java.util.*;
 public class ReportService {
     private final ReportRepository reportRepository;
     private final SuspiciousActivityService suspiciousActivityService;
-    private final FirmService firmService;
+    private final SpringTemplateEngine springTemplateEngine;
 
-    public List<ReportCategory> getCategoryandCount(Boolean filter, String firmRef) {
-        //List<SuspiciousActivityGroupByCategoryDTO> resultList = suspiciousActivityService.groupAndCountSuspiciousActivitiesByCategory("2023-01-01", firmRef);
-        List<SuspiciousActivityGroupByCategoryDTO> resultList = filter ? suspiciousActivityService.groupAndCountSuspiciousActivitiesByCategory("2023-01-01", firmRef) : null;
-        if (resultList == null || resultList.isEmpty()) {
-            return null;
-        }
-        List<ReportCategory> categoryList = new ArrayList<>();
-        for (SuspiciousActivityGroupByCategoryDTO dto : resultList) {
-            String category = dto.category();
-            Long count = dto.count();
-            ReportCategory reportCategory = new ReportCategory(category, count);
-            categoryList.add(reportCategory);
-        }
-        return categoryList;
+    private List<SuspiciousActivityGroupByCategoryDTO> getCategoryByCount(Boolean filter, String firmRef) {
+        return filter ? suspiciousActivityService.groupAndCountSuspiciousActivitiesByCategory("2023-01-01", firmRef) : null;
     }
 
-    public List<ReportCountry> getCountryandCount(Boolean filter, String firmRef) {
-        List<SuspiciousActivityGroupByOriginCountryDTO> resultList = filter ? suspiciousActivityService.groupAndCountSuspiciousActivitiesByOriginCountry("2023-01-01", firmRef) : null;
-        if (resultList == null || resultList.isEmpty()) {
-            return null;
-        }
-        List<ReportCountry> countryList = new ArrayList<>();
-        for (SuspiciousActivityGroupByOriginCountryDTO dto : resultList) {
-            String country = dto.country();
-            Long count = dto.count();
-            ReportCountry reportCountry = new ReportCountry(country, count);
-            countryList.add(reportCountry);
-        }
-        return countryList;
+    private List<SuspiciousActivityGroupByOriginCountryDTO> getCountryByCount(Boolean filter, String firmRef) {
+        return filter ? suspiciousActivityService.groupAndCountSuspiciousActivitiesByOriginCountry("2023-01-01", firmRef) : null;
     }
 
-    public List<ReportSource> getSourceandCount(Boolean filter, String firmRef) {
-        List<SuspiciousActivityGroupByOriginSourceDTO> resultList = filter ? suspiciousActivityService.groupAndCountSuspiciousActivitiesByOriginSource("2023-01-01", firmRef) : null;
-        if (resultList == null || resultList.isEmpty()) {
-            return null;
-        }
-        List<ReportSource> sourceList = new ArrayList<>();
-        for (SuspiciousActivityGroupByOriginSourceDTO dto : resultList) {
-            String sourceIp = dto.source();
-            Long count = dto.count();
-            ReportSource reportSource = new ReportSource(sourceIp, count);
-            sourceList.add(reportSource);
-        }
-        return sourceList;
+    private List<SuspiciousActivityGroupByOriginSourceDTO> getSourceByCount(Boolean filter, String firmRef) {
+        return filter ? suspiciousActivityService.groupAndCountSuspiciousActivitiesByOriginSource("2023-01-01", firmRef) : null;
     }
 
-    public byte[] htmlToPdf(String processedHtml, ReportSettings reportSettings, String firmRef) {
-        try {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            Report report = createReport(reportSettings, firmRef);
-            PdfWriter pdfWriter = new PdfWriter(byteArrayOutputStream);
-            DefaultFontProvider defaultFont = new DefaultFontProvider(false, true, false);
-            ConverterProperties converterProperties = new ConverterProperties();
-            converterProperties.setFontProvider(defaultFont);
-            HtmlConverter.convertToPdf(processedHtml, pdfWriter, converterProperties);
-            FileOutputStream fileOutputStream = new FileOutputStream(report.getReportPath());
-            byteArrayOutputStream.writeTo(fileOutputStream);
-            byteArrayOutputStream.close();
-            byteArrayOutputStream.flush();
-            fileOutputStream.close();
-            return byteArrayOutputStream.toByteArray();
-        } catch (Exception exception) {
-            log.error("Exception occurs in htmlToPdf operation of ReportService : {}", exception.getMessage());
+    public List<Report> getAllReports(String firmRef) {
+        List<Report> reports = new ArrayList<>();
+        try{
+            reports = reportRepository.findAllByFirmRef(firmRef);
+        } catch (Exception exception){
+            log.error("Exception occurs in get all operation of ReportService : {}",exception.getMessage());
         }
-        return null;
+        return reports;
     }
 
-    private Report createReport(ReportSettings reportSettings, String firmRef) {
-        Report report = new Report();
-        try {
-            report.setId(UUID.randomUUID().toString());
+    public Report getReportById(String id){
+        Report report = null;
+        try{
+            report = reportRepository.findById(id).orElse(null);
+        } catch (Exception exception){
+            log.error("Exception occurs in get by id operation of ReportService : {}",exception.getMessage());
+        }
+        return report;
+    }
 
-            while(reportRepository.existsById(report.getId())) {
-                report.setId(UUID.randomUUID().toString());
+    public byte[] getReportPdfById(String id){
+        try{
+            Report report = reportRepository.findById(id).orElse(null);
+            if(report == null){
+                throw new Exception("No report found with given id");
             }
+            FileInputStream fileInputStream = new FileInputStream(report.getReportPath());
+            byte[] pdfBytes = fileInputStream.readAllBytes();
+            fileInputStream.close();
+            return pdfBytes;
+        } catch (Exception exception){
+            log.error("Exception occurs in get by id operation of ReportService : {}",exception.getMessage());
+            return null;
+        }
+    }
 
-            report.setReportInitDate(LocalDateTime.now().toInstant(ZoneOffset.UTC));
-            report.setReportPath("C:\\Users\\Utku\\Desktop\\reports\\" + report.getId() + ".pdf");
-            report.setFirmRef(firmRef);
+    public byte[] getCoverImage(String id){
+        byte[] image = null;
+        try{
+            Report report = reportRepository.findById(id).orElse(null);
+            if(report == null) throw new Exception("No user found with given id");
+            String imagePath = report.getReportCoverPath();
+            Path path = Paths.get(imagePath);
+            if(Files.exists(path)){
+                image = Files.readAllBytes(path);
+            }
+        }catch (Exception error){
+            log.error("Exception occurs in get image operation of ReportService: {}",error.getMessage());
+        }
+        return image;
+    }
 
-            List<ReportCategory> categoryList = getCategoryandCount(reportSettings.getByCategory(), firmRef);
-            List<ReportCountry> countryList = getCountryandCount(reportSettings.getByCountry(), firmRef);
-            List<ReportSource> sourceList = getSourceandCount(reportSettings.getBySource(), firmRef);
-
-            report.setReportCategory(categoryList);
-            report.setReportCountry(countryList);
-            report.setReportSource(sourceList);
-
+    public Report createReport(ReportSettings reportSettings, String firmRef) {
+        Report report = null;
+        try {
+            report = new Report(
+                getCategoryByCount(reportSettings.byCategory(), firmRef),
+                getCountryByCount(reportSettings.byCountry(), firmRef),
+                getSourceByCount(reportSettings.bySource(), firmRef),
+                LocalDateTime.now().toInstant(ZoneOffset.UTC),
+                null, null, firmRef
+            );
+            report.setId(UUID.randomUUID().toString());
+            report.setReportPath("C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\honeynet-app-BE\\src\\main\\resources\\static\\reports\\" + report.getId() + ".pdf");
+            report.setReportCoverPath("C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\honeynet-app-BE\\src\\main\\resources\\static\\images\\report-cover\\cover.png");
             reportRepository.save(report);
-            log.info("New Report successfully created !");
+            log.info("New report document successfully created !");
+
+            Context reportContext = createReportContext(reportSettings, firmRef);
+            String finalHtml = createReportHtml(reportContext);
+            htmlToPdf(finalHtml, report.getReportPath());
+            log.info("Report pdf successfully created!");
         } catch (Exception exception) {
             log.error("Error occurs while creating a new report at ReportService: {}", exception.getMessage());
         }
         return report;
     }
 
+    private String createReportHtml(Context reportContext){
+        return springTemplateEngine.process("report", reportContext);
+    }
 
-    public Context setContext(ReportSettings reportSettings, String firmRef) {
+    private void htmlToPdf(String processedHtml,String reportPath) {
+        try {
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            PdfWriter pdfWriter = new PdfWriter(byteArrayOutputStream);
+            DefaultFontProvider defaultFont = new DefaultFontProvider(false, true, false);
+            ConverterProperties converterProperties = new ConverterProperties();
+            converterProperties.setFontProvider(defaultFont);
+            HtmlConverter.convertToPdf(processedHtml, pdfWriter, converterProperties);
+            FileOutputStream fileOutputStream = new FileOutputStream(reportPath);
+            byteArrayOutputStream.writeTo(fileOutputStream);
+            byteArrayOutputStream.close();
+            byteArrayOutputStream.flush();
+            fileOutputStream.close();
+        } catch (Exception exception) {
+            log.error("Exception occurs in htmlToPdf operation of ReportService : {}", exception.getMessage());
+        }
+    }
+
+    private Context createReportContext(ReportSettings reportSettings, String firmRef) {
         Context context = new Context();
         Map<String, Object> data = new HashMap<>();
 
-        List<ReportCategory> categoryList = getCategoryandCount(reportSettings.getByCategory(), firmRef);
-        List<ReportCountry> countryList = getCountryandCount(reportSettings.getByCountry(), firmRef);
-        List<ReportSource> sourceList = getSourceandCount(reportSettings.getBySource(), firmRef);
-
-        data.put("categoryList", categoryList);
-        data.put("countryList", countryList);
-        data.put("sourceList", sourceList);
+        data.put("categoryList", getCategoryByCount(reportSettings.byCategory(), firmRef));
+        data.put("countryList", getCountryByCount(reportSettings.byCountry(), firmRef));
+        data.put("sourceList", getSourceByCount(reportSettings.bySource(), firmRef));
 
         log.info("Report Settings for {}: {}", firmRef, reportSettings);
         context.setVariables(data);
 
         return context;
+    }
+
+    private void htmlToPng(String processedHtml, String firmRef) {
+        try {
+
+        } catch (Exception exception) {
+            log.error("Exception occurs in htmlToPdf operation of ReportService : {}", exception.getMessage());
+        }
+    }
+
+    private void deleteFile(Path path){
+        try{
+            if(Files.exists(path)){
+                Files.delete(path);
+                log.info("File located at '{}' deleted successfully",path);
+            }
+        }catch (Exception error){
+            log.error("Exception occurs in deleteFile operation of ReportService: {}\n File Path: '{}",error.getMessage(),path);
+        }
+    }
+
+    public boolean deleteReport(String id){
+        boolean status = false;
+        try{
+            Report report = reportRepository.findById(id).orElse(null);
+            if(report == null) throw new Exception("No report found with given id");
+            reportRepository.delete(report);
+            log.info("Report document deleted successfully");
+            this.deleteFile(Paths.get(report.getReportPath()));
+//            this.deleteFile(Paths.get(report.getReportCoverPath()));
+            status = true;
+        }catch (Exception error){
+            log.error("Exception occurs in delete operation of ReportService: {}",error.getMessage());
+        }
+        return status;
     }
 }

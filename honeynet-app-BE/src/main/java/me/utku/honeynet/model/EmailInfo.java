@@ -1,12 +1,9 @@
 package me.utku.honeynet.model;
 
 import lombok.Data;
-import me.utku.honeynet.dto.email.EmailFooterStatics;
 import org.springframework.data.annotation.TypeAlias;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 @Document
 @Data

@@ -1,9 +1,9 @@
 package me.utku.honeynet.model;
 
 import lombok.*;
-import me.utku.honeynet.dto.report.ReportCategory;
-import me.utku.honeynet.dto.report.ReportCountry;
-import me.utku.honeynet.dto.report.ReportSource;
+import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByCategoryDTO;
+import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginCountryDTO;
+import me.utku.honeynet.dto.chart.SuspiciousActivityGroupByOriginSourceDTO;
 import org.springframework.data.annotation.TypeAlias;
 
 import java.time.Instant;
@@ -11,11 +11,13 @@ import java.util.List;
 
 @Data
 @TypeAlias("Report")
+@AllArgsConstructor
 public class Report extends Base{
-    private List<ReportCategory> reportCategory;
-    private List<ReportCountry> reportCountry;
-    private List<ReportSource> reportSource;
-    private Instant reportInitDate;
+    private List<SuspiciousActivityGroupByCategoryDTO> reportCategory;
+    private List<SuspiciousActivityGroupByOriginCountryDTO> reportCountry;
+    private List<SuspiciousActivityGroupByOriginSourceDTO> reportSource;
+    private Instant createdAt;
     private String reportPath;
+    private String reportCoverPath;
     private String firmRef;
 }

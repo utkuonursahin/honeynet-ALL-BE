@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChartService {
     private final SuspiciousActivityService suspiciousActivityService;
-    private final ServerInfoService serverInfoService;
+    private final ServerInstanceService serverInstanceService;
 
     public List<SuspiciousActivityGroupByCategoryDTO> getGroupedSuspiciousActivitiesByCategory(String since, String firmRef) {
         return suspiciousActivityService.groupAndCountSuspiciousActivitiesByCategory(since, firmRef);
@@ -29,6 +29,6 @@ public class ChartService {
     }
 
     public List<ServerInfoGroupByStatusDTO> getGroupedServerInfoByStatus(String firmRef){
-        return serverInfoService.groupAndCountServerInfoByStatus(firmRef);
+        return serverInstanceService.groupAndCountServerInfoByStatus(firmRef);
     }
 }
