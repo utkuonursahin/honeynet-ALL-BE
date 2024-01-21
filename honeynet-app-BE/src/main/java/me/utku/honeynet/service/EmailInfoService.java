@@ -38,7 +38,7 @@ public class EmailInfoService {
                 });
             }
             if (emailInfoFilter.getReceiverFilter() == null){
-                emailInfoFilter.setReceiverFilter("mcayhan6006@gmail.com");
+                emailInfoFilter.setReceiverFilter("honeypotuygulama@gmail.com");
             }
             log.info("Filter applied as => {}",emailInfoFilter);
             Pageable pageable = PageRequest.of(page,size);

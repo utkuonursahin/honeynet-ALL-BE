@@ -124,6 +124,23 @@ public class ReportService {
         return report;
     }
 
+    private Context createReportCoverContext(Report report){
+        Context reportCoverContext = new Context();
+        Map<String, Object> data = new HashMap<>();
+        data.put("bgPath","C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\honeynet-app-BE\\src\\main\\resources\\static\\images\\report-cover\\bg.png");
+        data.put("beamLogoPath","C:\\Users\\Utku\\Personal\\Projects\\Java Projects\\honeynet-ALL-BE\\honeynet-app-BE\\src\\main\\resources\\static\\images\\report-cover\\beamLogo.png");
+        data.put("createdDate",report.getCreatedAt().toString());
+        if(!report.getReportCategory().isEmpty()) data.put("categoryList","Category");
+        if(!report.getReportCountry().isEmpty()) data.put("countryList","Country");
+        if(!report.getReportSource().isEmpty()) data.put("sourceList","Source");
+        reportCoverContext.setVariables(data);
+        return reportCoverContext;
+    }
+
+    private String createReportCoverHtml(Context reportCoverContext){
+        return springTemplateEngine.process("report-cover", reportCoverContext);
+    }
+
     private String createReportHtml(Context reportContext){
         return springTemplateEngine.process("report", reportContext);
     }
