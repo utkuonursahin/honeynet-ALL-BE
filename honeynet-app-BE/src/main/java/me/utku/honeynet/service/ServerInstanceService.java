@@ -25,12 +25,11 @@ import static org.springframework.data.mongodb.core.aggregation.Aggregation.proj
 
 @Slf4j
 @Service
-@RequiredArgsConstructor(onConstructor_ = {@Lazy})
+@RequiredArgsConstructor()
 public class ServerInstanceService {
     private final MongoTemplate mongoTemplate;
     private final ServerInstanceRepository serverInstanceRepository;
     private final PotService potService;
-    @Lazy
     private final RestService restService;
 
     public List<ServerInstance> getAll(){
@@ -173,6 +172,11 @@ public class ServerInstanceService {
         } catch (Exception exception){
             log.error("Exception occurs in delete operation of ServerInstanceService : {}",exception.getMessage());
         }
+    }
+
+    public String findServerUrl(String potId,String firmId){
+        ServerInstance serverInstance = getByPotIdAndFirmId(potId,firmId);
+        return "http://localhost:"+ serverInstance.getPort();
     }
 
     public void extractJar(String path){

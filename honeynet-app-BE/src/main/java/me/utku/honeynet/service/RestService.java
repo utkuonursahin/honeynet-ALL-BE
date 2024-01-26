@@ -19,14 +19,12 @@ import java.util.*;
 @Service
 @Slf4j
 public class RestService {
-    private final ServerInstanceService serverInstanceService;
     private final RestTemplate restTemplate;
     private final JWTService jwtService;
 
-    public RestService(RestTemplateBuilder restTemplateBuilder, JWTService jwtService, ServerInstanceService serverInstanceService) {
+    public RestService(RestTemplateBuilder restTemplateBuilder, JWTService jwtService) {
         this.restTemplate = restTemplateBuilder.build();
         this.jwtService = jwtService;
-        this.serverInstanceService = serverInstanceService;
     }
 
     public HttpHeaders generateHeaders(){
@@ -50,10 +48,7 @@ public class RestService {
         return map;
     }
 
-    public String findServerUrl(String potId,String firmId){
-        ServerInstance serverInstance = serverInstanceService.getByPotIdAndFirmId(potId,firmId);
-        return "http://localhost:"+ serverInstance.getPort();
-    }
+
 
     public List<EmailListener> getEmailListeners(String url, HttpHeaders headers){
         HttpEntity<String> request = new HttpEntity<>(headers);
@@ -81,66 +76,61 @@ public class RestService {
         return this.restTemplate.exchange(url+"/clone",HttpMethod.POST,request, CloneResponse.class).getBody();
     }
 
-    public List<EmailListener> forwardGetAllEmailListeners(String potId,String firmId){
+    public List<EmailListener> forwardGetAllEmailListeners(String serverUrl){
         List<EmailListener> emailListeners = new ArrayList<>();
         try{
             HttpHeaders headers = generateHeaders();
-            emailListeners = getEmailListeners(findServerUrl(potId,firmId),headers);
+            emailListeners = getEmailListeners(serverUrl,headers);
         } catch (Exception error){
             log.error("Error while forwarding get all email listeners request: {}", error.getMessage());
         }
         return emailListeners;
     }
 
-    public EmailListener forwardCreateEmailListener(String potId, String firmId,EmailSetupRequest emailSetupRequest){
+    public EmailListener forwardCreateEmailListener(String serverUrl,EmailSetupRequest emailSetupRequest){
         try{
             HttpHeaders headers = generateHeaders();
             Map<String, Object> body = generateBody(emailSetupRequest);
-            return postEmailListener(findServerUrl(potId,firmId),body,headers);
+            return postEmailListener(serverUrl,body,headers);
         } catch (Exception error){
             log.error("Error while forwarding email listener setup request: {}", error.getMessage());
             return null;
         }
     }
 
-    public EmailListener forwardUpdateEmailListener(String id, String potId, String firmId, EmailListener updatePart){
+    public EmailListener forwardUpdateEmailListener(String id, String serverUrl, EmailListener updatePart){
         try{
             HttpHeaders headers = generateHeaders();
             Map<String,Object> body = new HashMap<>();
             body.put("status", updatePart.getStatus());
-            return putEmailListener(id,findServerUrl(potId,firmId),body,headers);
+            return putEmailListener(id,serverUrl,body,headers);
         } catch (Exception error){
             log.error("Error while forwarding email listener update request: {}", error.getMessage());
             return null;
         }
     }
 
-    public Boolean forwardDeleteEmailListener(String id,String potId, String firmId){
+    public Boolean forwardDeleteEmailListener(String id,String serverUrl){
         try{
             HttpHeaders headers = generateHeaders();
-            return deleteEmailListener(id,findServerUrl(potId,firmId),headers);
+            return deleteEmailListener(id,serverUrl,headers);
         } catch (Exception error){
             log.error("Error while forwarding delete all email listeners request: {}", error.getMessage());
             return false;
         }
     }
 
-    public CloneResponse forwardCloneSite(String cloneUrl, String potId, String firmId){
+    public CloneResponse forwardCloneSite(String cloneUrl, String serverUrl){
+        CloneResponse cloneResponse = null;
         try{
             HttpHeaders headers = generateHeaders();
             Map<String,Object> body = new HashMap<>();
             body.put("cloneUrl", cloneUrl);
-            CloneResponse cloneResponse = postCloneSite(findServerUrl(potId,firmId),body,headers);
-            ServerInstance serverInstance = serverInstanceService.getByPotIdAndFirmId(potId,firmId);
-            serverInstanceService.shutdown(serverInstance.getId());
-            Thread.sleep(100);
-            serverInstanceService.extractJar(new File("").getAbsoluteFile().getParent()+"\\clone-honeypot-BE");
-            serverInstanceService.start(serverInstance.getId());
-            return cloneResponse;
+            cloneResponse = postCloneSite(serverUrl,body,headers);
         } catch (Exception error){
             log.error("Error while forwarding clone site request: {}", error.getMessage());
-            return null;
         }
+        return cloneResponse;
     }
 
     public void shutdownTargetServer(ServerInstance serverInstance){

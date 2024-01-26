@@ -25,7 +25,6 @@ import java.util.UUID;
 @RequiredArgsConstructor(onConstructor_ = {@Lazy})
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
-    @Lazy
     private final PasswordEncoder passwordEncoder;
     private final FirmService firmService;
 
